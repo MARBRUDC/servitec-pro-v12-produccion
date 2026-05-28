@@ -1,5 +1,0 @@
-const fs=require('fs');const path=require('path');
-const out='dist';fs.rmSync(out,{recursive:true,force:true});fs.mkdirSync(out,{recursive:true});fs.cpSync('src',path.join(out,'src'),{recursive:true});fs.copyFileSync('index.html',path.join(out,'index.html'));
-const cfg=`window.SERVITEC_ENV=${JSON.stringify({SUPABASE_URL:process.env.VITE_SUPABASE_URL||'',SUPABASE_KEY:process.env.VITE_SUPABASE_KEY||''})};`;
-fs.writeFileSync(path.join(out,'env.js'),cfg);
-console.log('Build OK: dist generado');
