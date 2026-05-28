@@ -1,8 +1,11 @@
-# SERVITEC PRO V12.6 PRODUCCIÓN
+# SERVITEC PRO V12.8 FLUJO COTIZACIÓN
 
-Sistema React + Vite listo para GitHub y Vercel.
+Restaurado:
+- Cliente -> Establecimientos -> Áreas usuarias.
+- Tipo de servicio.
+- Configuración de cotización.
+- Actividades en tabla con selección, edición y eliminación.
+- Importación de actividades solo descripción, cantidad 1 y precio 0.
 
-## Comandos
-npm install
-npm run dev
-npm run build
+Subir a GitHub: src, index.html, package.json, vite.config.js, README.md y .gitignore.
+No subir: node_modules, dist, package-lock.json.
