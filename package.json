@@ -4,8 +4,6 @@
   "private": true,
   "scripts": {
     "build": "node build.js",
-    "dev": "node server.js"
-  },
-  "dependencies": {},
-  "devDependencies": {}
+    "start": "node server.js"
+  }
 }
