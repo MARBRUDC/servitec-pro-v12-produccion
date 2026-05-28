@@ -1,14 +1,19 @@
-# SERVITEC PRO V12.9 RESCATE TOTAL
-
-Versión reconstruida estable con:
-- Clientes jerárquicos: Cliente → Establecimientos → Áreas usuarias.
-- Cotización con tipo de servicio y configuración.
-- Actividades en tabla con selección, edición y eliminación múltiple.
-- Importación de actividades solo como descripción, cantidad 1 y precio 0.
-- Guardado local temporal.
-
-Instalar:
-```bash
-npm install
-npm run dev
-```
+{
+  "name": "servitec-pro-v12-10-base-real",
+  "version": "12.10.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "latest",
+    "vite": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "lucide-react": "latest"
+  },
+  "devDependencies": {}
+}
