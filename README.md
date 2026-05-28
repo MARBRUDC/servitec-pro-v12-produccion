@@ -1,12 +1,9 @@
-# SERVITEC PRO V12.15 EJECUCION ACTIVIDADES
+# SERVITEC PRO V12.16 FLUJO CAMPO PROBADO
+Flujo funcional: Cotización → Ejecución → Evidencias → Acta de conformidad → Informe técnico.
 
-Validación:
-Debe aparecer el banner:
-SERVITEC PRO V12.15 EJECUCION ACTIVIDADES · CÁLCULO DIRECTO DESDE FILAS
+## Subir a GitHub/Vercel
+Subir solo: src, index.html, package.json, vite.config.js, vercel.json, README.md.
+No subir: node_modules, dist, package-lock.json.
 
-Corrección crítica:
-- El total ya no depende de quote.total ni quote.totalBase.
-- El PDF calcula desde las filas visibles: cantidad x precio.
-- La lista de cotizaciones calcula el total en vivo.
-- El PDF muestra subtotal por fila.
-- Firma única.
+## Nota multiusuario
+Esta versión funciona en nube como aplicación estática y guarda en el navegador. Para multiusuario real entre varios dispositivos se requiere Supabase/Firebase.
