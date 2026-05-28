@@ -1,19 +1,12 @@
-{
-  "name": "servitec-pro-v12-10-base-real",
-  "version": "12.10.0",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
-  },
-  "dependencies": {
-    "@vitejs/plugin-react": "latest",
-    "vite": "latest",
-    "react": "latest",
-    "react-dom": "latest",
-    "lucide-react": "latest"
-  },
-  "devDependencies": {}
-}
+# SERVITEC PRO V12 TOTAL PDF FINAL
+
+Validación:
+Debe aparecer el banner:
+SERVITEC PRO V12 TOTAL PDF FINAL · CÁLCULO DIRECTO DESDE FILAS
+
+Corrección crítica:
+- El total ya no depende de quote.total ni quote.totalBase.
+- El PDF calcula desde las filas visibles: cantidad x precio.
+- La lista de cotizaciones calcula el total en vivo.
+- El PDF muestra subtotal por fila.
+- Firma única.
