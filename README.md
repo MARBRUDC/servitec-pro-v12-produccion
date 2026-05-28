@@ -1,11 +1,12 @@
-# SERVITEC PRO V12.8 FLUJO COTIZACIÓN
+# SERVITEC PRO V12 TOTAL PDF FINAL
 
-Restaurado:
-- Cliente -> Establecimientos -> Áreas usuarias.
-- Tipo de servicio.
-- Configuración de cotización.
-- Actividades en tabla con selección, edición y eliminación.
-- Importación de actividades solo descripción, cantidad 1 y precio 0.
+Validación:
+Debe aparecer el banner:
+SERVITEC PRO V12 TOTAL PDF FINAL · CÁLCULO DIRECTO DESDE FILAS
 
-Subir a GitHub: src, index.html, package.json, vite.config.js, README.md y .gitignore.
-No subir: node_modules, dist, package-lock.json.
+Corrección crítica:
+- El total ya no depende de quote.total ni quote.totalBase.
+- El PDF calcula desde las filas visibles: cantidad x precio.
+- La lista de cotizaciones calcula el total en vivo.
+- El PDF muestra subtotal por fila.
+- Firma única.

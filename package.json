@@ -1,9 +1,21 @@
 {
-  "name": "servitec-pro-v12-8-flujo-cotizacion",
+  "name": "servitec-pro-v12-total-pdf-final",
   "private": true,
-  "version": "12.8.0",
+  "version": "12.0.0",
   "type": "module",
-  "scripts": {"dev":"vite","build":"vite build","preview":"vite preview"},
-  "dependencies": {"@vitejs/plugin-react":"latest","vite":"latest","react":"latest","react-dom":"latest","lucide-react":"latest"},
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "latest",
+    "vite": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "lucide-react": "latest",
+    "jspdf": "latest",
+    "html2canvas": "latest"
+  },
   "devDependencies": {}
 }
