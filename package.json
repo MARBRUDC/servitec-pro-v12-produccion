@@ -1,1 +1,11 @@
-<!doctype html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SERVITEC PRO V13.8 RESCATE REAL</title><script src="/env.js"></script><script>window.SERVITEC_ENV=window.SERVITEC_ENV||{SUPABASE_URL:'',SUPABASE_KEY:''}</script><link rel="stylesheet" href="/src/styles.css"></head><body><div id="app"></div><script type="module" src="/src/main.js"></script></body></html>
+{
+  "name": "servitec-pro-v13",
+  "version": "13.8.1",
+  "private": true,
+  "scripts": {
+    "build": "node build.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}
