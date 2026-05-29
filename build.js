@@ -13,4 +13,4 @@ fs.writeFileSync(path.join(dist, 'index.html'), html);
 ['main.js','styles.css','supabase-schema.sql','README.md'].forEach(f=>{
   if(fs.existsSync(path.join(__dirname,f))) fs.copyFileSync(path.join(__dirname,f), path.join(dist,f));
 });
-console.log('SERVITEC PRO V13.14 build OK');
+console.log('SERVITEC PRO V13.16 build OK');
