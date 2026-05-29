@@ -176,3 +176,4 @@ function execGate(q){if(!q.ordenNumero||!q.siaf){return `<div class="card"><h3>A
 function autorizarExec(id){let q=state.cotizaciones.find(x=>x.id===id);let orden=$('#execOrden').value.trim(), siaf=$('#execSiaf').value.trim();if(!orden||!siaf){alert('Registra N° de orden y N° SIAF para iniciar ejecución.');return}q.ordenTipo=$('#execTipo').value;q.ordenNumero=orden;q.siaf=siaf;q.fechaOrden=$('#execFecha').value;q.estado='En ejecución';q.execRows=rows(q).map((r,i)=>({id:r.id||('r'+i),estado:'Pendiente',observacion:'',descripcion:r.descripcion}));persist();render()}
 
 loadCloud();render();
+// FORCE DEPLOY V13-13
