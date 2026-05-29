@@ -1,8 +1,20 @@
-# SERVITEC PRO V13.16 EJECUCIÓN + ACTA + INFORME
+# SERVITEC PRO V13.15 EJECUCIÓN REAL
 
-- Empresa activa global.
-- Logo/firma/condiciones por empresa.
-- Ejecución con actividades adicionales en campo.
-- Comentarios técnicos, recomendaciones y garantía.
-- Acta de conformidad diferenciada.
-- Informe técnico diferenciado con panel fotográfico.
+Cambios:
+
+- Flujo Cotización → Orden/SIAF → Ejecución.
+- Ejecución toma actividades reales de la cotización seleccionada.
+- Estados por cotización y por actividad.
+- Actas e informes solo desde cotizaciones autorizadas.
+- Mantiene cotización, importación masiva, edición estable y PDF corporativo.
+
+Subir solo estos archivos:
+
+- README.md
+- build.js
+- index.html
+- main.js
+- package.json
+- server.js
+- styles.css
+- supabase-schema.sql
