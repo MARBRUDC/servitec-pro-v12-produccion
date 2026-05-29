@@ -1,13 +1,15 @@
-# SERVITEC PRO V13.14 ORDEN CAMPO
+# SERVITEC PRO V13.15 EJECUCIÓN REAL
 
 Cambios:
-- PDF de cotización mantiene lógica actual y mejora datos corporativos.
-- Logo, firma del gerente, condiciones y observaciones se editan por empresa.
-- Ejecución ahora depende de la cotización seleccionada.
-- Para iniciar ejecución exige N° de Orden de Compra/Servicio y N° SIAF.
-- Si no tiene orden/SIAF, la cotización queda solo en fase cotización.
+
+- Flujo Cotización → Orden/SIAF → Ejecución.
+- Ejecución toma actividades reales de la cotización seleccionada.
+- Estados por cotización y por actividad.
+- Actas e informes solo desde cotizaciones autorizadas.
+- Mantiene cotización, importación masiva, edición estable y PDF corporativo.
 
 Subir solo estos archivos:
+
 - README.md
 - build.js
 - index.html
@@ -16,8 +18,3 @@ Subir solo estos archivos:
 - server.js
 - styles.css
 - supabase-schema.sql
-
-
-## Cambios V13.14
-- En Actividades generales → varios equipos, ahora se muestran primero las actividades generales y luego los equipos incluidos.
-- No se modificó la lógica de cálculo, importación, PDF ni ejecución.
