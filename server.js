@@ -1,13 +1,16 @@
-const http = require('http');
-const fs = require('fs');
-const path = require('path');
-const port = process.env.PORT || 3000;
-http.createServer((req,res)=>{
-  const file = req.url.includes('.js')?'main.js':req.url.includes('.css')?'styles.css':'index.html';
-  const p = path.join(__dirname,file);
-  fs.readFile(p,(err,data)=>{
-    if(err){res.writeHead(404);res.end('Not found');return}
-    res.writeHead(200, {'Content-Type': file.endsWith('.js')?'text/javascript':file.endsWith('.css')?'text/css':'text/html'});
-    res.end(data);
-  })
-}).listen(port,()=>console.log('SERVITEC local http://localhost:'+port));
+# SERVITEC PRO V13.11 EDICIÓN ESTABLE
+
+Corrección principal:
+- Los campos de precio, cantidad y descripción ya no saltan de celda al escribir.
+- Importación masiva sigue activa.
+- Configuraciones de cotización diferenciadas.
+
+Subir solo estos archivos:
+- README.md
+- build.js
+- index.html
+- main.js
+- package.json
+- server.js
+- styles.css
+- supabase-schema.sql
