@@ -1,4 +1,4 @@
-# SERVITEC PRO V13.13 EJECUCIÓN CONTROLADA
+# SERVITEC PRO V13.14 ORDEN CAMPO
 
 Cambios:
 - PDF de cotización mantiene lógica actual y mejora datos corporativos.
@@ -16,3 +16,8 @@ Subir solo estos archivos:
 - server.js
 - styles.css
 - supabase-schema.sql
+
+
+## Cambios V13.14
+- En Actividades generales → varios equipos, ahora se muestran primero las actividades generales y luego los equipos incluidos.
+- No se modificó la lógica de cálculo, importación, PDF ni ejecución.
