@@ -1,15 +1,18 @@
-# SERVITEC PRO V13.12.1 PDF CORPORATIVO
+# SERVITEC PRO V13.13 EJECUCIÓN CONTROLADA
 
-Corrección enfocada SOLO en el formato PDF de cotización.
+Cambios:
+- PDF de cotización mantiene lógica actual y mejora datos corporativos.
+- Logo, firma del gerente, condiciones y observaciones se editan por empresa.
+- Ejecución ahora depende de la cotización seleccionada.
+- Para iniciar ejecución exige N° de Orden de Compra/Servicio y N° SIAF.
+- Si no tiene orden/SIAF, la cotización queda solo en fase cotización.
 
-Incluye:
-- Cotización agrupada por equipo cuando la configuración es “Cada equipo con sus propias actividades”.
-- Cotización con equipos + actividades generales cuando la configuración es “Actividades generales → varios equipos”.
-- Cotización tipo tabla comercial para repuestos/accesorios.
-- Cabecera corporativa.
-- Datos del cliente.
-- Condiciones comerciales.
-- Firma únicamente del gerente general.
-- Título del documento: COTIZACION-COT-AAAA-000X.
-
-No se modificó la lógica operativa del módulo de cotizaciones.
+Subir solo estos archivos:
+- README.md
+- build.js
+- index.html
+- main.js
+- package.json
+- server.js
+- styles.css
+- supabase-schema.sql
