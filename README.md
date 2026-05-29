@@ -1,16 +1,15 @@
-# SERVITEC PRO V13.11 EDICIÓN ESTABLE
+# SERVITEC PRO V13.12.1 PDF CORPORATIVO
 
-Corrección principal:
-- Los campos de precio, cantidad y descripción ya no saltan de celda al escribir.
-- Importación masiva sigue activa.
-- Configuraciones de cotización diferenciadas.
+Corrección enfocada SOLO en el formato PDF de cotización.
 
-Subir solo estos archivos:
-- README.md
-- build.js
-- index.html
-- main.js
-- package.json
-- server.js
-- styles.css
-- supabase-schema.sql
+Incluye:
+- Cotización agrupada por equipo cuando la configuración es “Cada equipo con sus propias actividades”.
+- Cotización con equipos + actividades generales cuando la configuración es “Actividades generales → varios equipos”.
+- Cotización tipo tabla comercial para repuestos/accesorios.
+- Cabecera corporativa.
+- Datos del cliente.
+- Condiciones comerciales.
+- Firma únicamente del gerente general.
+- Título del documento: COTIZACION-COT-AAAA-000X.
+
+No se modificó la lógica operativa del módulo de cotizaciones.
