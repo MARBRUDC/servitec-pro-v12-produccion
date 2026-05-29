@@ -1,13 +1,3 @@
-# SERVITEC PRO V13.9 LIMPIO
+# SERVITEC PRO V13.10 IMPORTACIÓN MASIVA
 
-Subir a GitHub SOLO estos archivos:
-- README.md
-- build.js
-- index.html
-- main.js
-- package.json
-- server.js
-- styles.css
-- supabase-schema.sql
-
-NO subir zip, dist, src, node_modules, package-lock, vite.config.
+Versión limpia con importación masiva por lista completa, configuraciones dinámicas y build estable para Vercel.
