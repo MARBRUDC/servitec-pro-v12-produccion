@@ -1942,3 +1942,334 @@ render=function(){
   bind(); if(typeof initSignaturePads==='function')initSignaturePads();
 };
 render();
+
+
+/* ============================================================
+   SERVITEC PRO V13.22.0 - EJECUCIÓN MOBILE FIRST
+   Parche seguro:
+   - Solo reemplaza la vista de Ejecución.
+   - No toca Empresas, Clientes, Cotizaciones ni PDF.
+   - Cambia tabla por tarjetas móviles.
+   - Mantiene autosave y datos técnicos.
+   - Genera 1 equipo por unidad, no una fila por actividad.
+============================================================ */
+const VERSION_EJECUCION_MOBILE='SERVITEC PRO V13.22.0 EJECUCIÓN MOBILE FIRST';
+
+function s220_e(v){return (typeof s21_escape==='function')?s21_escape(v):String(v||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('"','&quot;')}
+function s220_uid(){return (typeof s21_uid==='function')?s21_uid():Math.random().toString(36).slice(2,9)}
+function s220_empId(){return (typeof s21_empId==='function')?s21_empId():(state.activeEmpresaId||'')}
+function s220_activeEmpresa(){return (typeof s21_activeEmpresa==='function')?s21_activeEmpresa():((state.empresas||[]).find(e=>e.id===s220_empId())||{})}
+function s220_persist(){try{persist&&persist()}catch(e){} try{saveCloud&&saveCloud()}catch(e){}}
+function s220_ls(k,v){try{if(v===undefined)return localStorage.getItem(k)||''; localStorage.setItem(k,v||'')}catch(e){return ''}}
+function s220_cots(){const emp=s220_empId();return (state.cotizaciones||[]).filter(q=>(q.empresaId||q.empresa_id||emp)===emp)}
+function s220_execKey(){return 'servitec_exec_qid'}
+function s220_selQid(){return s220_ls(s220_execKey())}
+function s220_setQid(id){s220_ls(s220_execKey(),id)}
+function s220_pad(n,total){return String(n).padStart(String(total||999).length,'0')}
+function s220_qty(e){return Math.max(1,parseInt(e.cantidad||e.qty||1,10)||1)}
+function s220_code(q){return q.numero||q.codigo||('COT-'+String(q.id||'').slice(0,6))}
+function s220_cliente(q){return q.clienteNombre||((state.clientes||[]).find(c=>c.id===q.clienteId)||{}).nombre||'-'}
+function s220_acts(q, eq){
+  let acts=[];
+  if(eq && eq.acts && eq.acts.length) acts=eq.acts;
+  else if(q.acts&&q.acts.length) acts=q.acts;
+  else if(q.actividades&&q.actividades.length) acts=q.actividades;
+  else acts=[{id:'act_general',descripcion:q.tipo||'Actividad técnica'}];
+  return acts.map((a,i)=>({
+    id:a.id||('act_'+i),
+    descripcion:a.descripcion||a.nombre||String(a)||'Actividad técnica',
+    estado:a.estado||'Pendiente'
+  }));
+}
+function s220_generateEquipos(q){
+  const equipos=(q.equipos&&q.equipos.length?q.equipos:[{id:'eq_grupo',nombre:'Equipo',cantidad:1,marca:'',modelo:''}]);
+  const total=equipos.reduce((s,e)=>s+s220_qty(e),0);
+  let idx=0, rows=[];
+  equipos.forEach(eq=>{
+    const qty=s220_qty(eq);
+    for(let n=1;n<=qty;n++){
+      idx++;
+      rows.push({
+        id:'equipo_'+idx+'_'+s220_uid(),
+        item:idx,
+        totalItems:total,
+        tipoEquipo:eq.nombre||eq.tipo||'Equipo',
+        marca:eq.marca||'',
+        modelo:eq.modelo||'',
+        serie:'',
+        patrimonial:'',
+        codigoPatrimonial:'',
+        ubicacion:'',
+        estado:'Pendiente',
+        fase:'Pendiente',
+        fechaRetiro:'',
+        observacionRecojo:'',
+        codigoCalibracion:'',
+        resultado:'',
+        observacionTecnica:'',
+        evidenciaAntes:'',
+        evidenciaDurante:'',
+        evidenciaDespues:'',
+        actividades:s220_acts(q,eq)
+      });
+    }
+  });
+  return rows;
+}
+function s220_normalizeExec(q){
+  if(q.execEquipos && Array.isArray(q.execEquipos) && q.execEquipos.length) return q.execEquipos;
+  if(q.execRows && Array.isArray(q.execRows) && q.execRows.length){
+    const grouped={};
+    q.execRows.forEach(r=>{
+      const key=r.item || Object.keys(grouped).length+1;
+      if(!grouped[key]){
+        grouped[key]={
+          id:'equipo_'+key+'_'+s220_uid(),
+          item:r.item||Number(key),
+          totalItems:r.totalItems||0,
+          tipoEquipo:r.tipoEquipo||'Equipo',
+          marca:r.marca||'',
+          modelo:r.modelo||'',
+          serie:r.serie||'',
+          patrimonial:r.patrimonial||r.codigoPatrimonial||'',
+          codigoPatrimonial:r.codigoPatrimonial||r.patrimonial||'',
+          ubicacion:r.ubicacion||'',
+          estado:r.estado||'Pendiente',
+          fase:r.estado||'Pendiente',
+          fechaRetiro:r.fechaRetiro||'',
+          observacionRecojo:'',
+          codigoCalibracion:'',
+          resultado:'',
+          observacionTecnica:r.observacion||'',
+          evidenciaAntes:r.evidencia||'',
+          evidenciaDurante:'',
+          evidenciaDespues:'',
+          actividades:[]
+        };
+      }
+      grouped[key].actividades.push({
+        id:r.id||s220_uid(),
+        descripcion:r.actividad||'Actividad técnica',
+        estado:r.estado||'Pendiente'
+      });
+    });
+    q.execEquipos=Object.values(grouped);
+    const total=q.execEquipos.length;
+    q.execEquipos.forEach((x,i)=>{x.item=i+1;x.totalItems=total});
+    s220_persist();
+    return q.execEquipos;
+  }
+  q.execEquipos=s220_generateEquipos(q);
+  s220_persist();
+  return q.execEquipos;
+}
+function s220_resumen(q){
+  const rows=s220_normalizeExec(q);
+  const total=rows.length;
+  const registrados=rows.filter(r=>['Registrado','Retirado','En taller','Finalizado','Observado'].includes(r.estado)).length;
+  const pendientes=rows.filter(r=>r.estado==='Pendiente').length;
+  const taller=rows.filter(r=>r.estado==='En taller').length;
+  const finalizados=rows.filter(r=>r.estado==='Finalizado').length;
+  const observados=rows.filter(r=>r.estado==='Observado').length;
+  const tipos={};
+  rows.forEach(r=>{
+    if(!tipos[r.tipoEquipo]) tipos[r.tipoEquipo]={total:0,registrados:0,finalizados:0};
+    tipos[r.tipoEquipo].total++;
+    if(r.estado!=='Pendiente') tipos[r.tipoEquipo].registrados++;
+    if(r.estado==='Finalizado') tipos[r.tipoEquipo].finalizados++;
+  });
+  return {rows,total,registrados,pendientes,taller,finalizados,observados,tipos};
+}
+function s220_update(qid,idx,field,val){
+  const q=(state.cotizaciones||[]).find(x=>x.id===qid); if(!q)return;
+  const rows=s220_normalizeExec(q);
+  if(!rows[idx])return;
+  rows[idx][field]=val;
+  if(['marca','modelo','serie','patrimonial','codigoPatrimonial','ubicacion'].includes(field) && rows[idx].estado==='Pendiente'){
+    rows[idx].estado='Registrado';
+  }
+  rows[idx].updatedAt=new Date().toISOString();
+  q.estado='En ejecución';
+  q.execSaveStatus='✓ Guardado';
+  s220_persist();
+}
+function s220_updateAct(qid,idx,actIndex,field,val){
+  const q=(state.cotizaciones||[]).find(x=>x.id===qid); if(!q)return;
+  const rows=s220_normalizeExec(q);
+  if(!rows[idx]||!rows[idx].actividades||!rows[idx].actividades[actIndex])return;
+  rows[idx].actividades[actIndex][field]=val;
+  rows[idx].updatedAt=new Date().toISOString();
+  q.estado='En ejecución';
+  q.execSaveStatus='✓ Guardado';
+  s220_persist();
+}
+function s220_file(qid,idx,field,file){
+  const q=(state.cotizaciones||[]).find(x=>x.id===qid); if(!q||!file)return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    const rows=s220_normalizeExec(q);
+    rows[idx][field]=reader.result;
+    rows[idx][field+'Nombre']=file.name;
+    rows[idx].updatedAt=new Date().toISOString();
+    if(rows[idx].estado==='Pendiente')rows[idx].estado='Registrado';
+    q.estado='En ejecución';
+    q.execSaveStatus='✓ Guardado';
+    s220_persist();
+    render();
+  };
+  reader.readAsDataURL(file);
+}
+function s220_authorize(qid){
+  const q=(state.cotizaciones||[]).find(x=>x.id===qid); if(!q)return;
+  const orden=(document.getElementById('s220_orden')?.value||'').trim();
+  const siaf=(document.getElementById('s220_siaf')?.value||'').trim();
+  if(!orden||!siaf)return alert('Registra N° de orden y N° SIAF.');
+  q.ordenTipo=document.getElementById('s220_tipo')?.value||'Orden de servicio';
+  q.ordenNumero=orden;
+  q.siaf=siaf;
+  q.fechaOrden=document.getElementById('s220_fecha')?.value||new Date().toISOString().slice(0,10);
+  q.estado='En ejecución';
+  q.execEquipos=s220_generateEquipos(q);
+  delete q.execRows;
+  q.execSaveStatus='✓ Ejecución generada';
+  s220_persist();
+  render();
+}
+function s220_reset(qid){
+  const q=(state.cotizaciones||[]).find(x=>x.id===qid); if(!q)return;
+  if(!confirm('¿Regenerar ítems? Se perderán datos técnicos ya registrados.'))return;
+  q.execEquipos=s220_generateEquipos(q);
+  delete q.execRows;
+  q.execSaveStatus='✓ Ítems regenerados';
+  s220_persist();
+  render();
+}
+function s220_setFilter(qid,k,v){
+  const q=(state.cotizaciones||[]).find(x=>x.id===qid); if(!q)return;
+  q.execFilter=q.execFilter||{};
+  q.execFilter[k]=v;
+  s220_persist();
+  render();
+}
+function s220_filter(q,rows){
+  const tipo=q.execFilter?.tipo||'Todos';
+  const estado=q.execFilter?.estado||'Todos';
+  const buscar=(q.execFilter?.buscar||'').toLowerCase();
+  return rows.filter(r=>{
+    if(tipo!=='Todos' && r.tipoEquipo!==tipo)return false;
+    if(estado!=='Todos' && r.estado!==estado)return false;
+    if(buscar){
+      const blob=[r.item,r.tipoEquipo,r.marca,r.modelo,r.serie,r.patrimonial,r.codigoPatrimonial,r.ubicacion,r.codigoCalibracion,r.resultado,r.observacionTecnica,r.observacionRecojo].join(' ').toLowerCase();
+      if(!blob.includes(buscar))return false;
+    }
+    return true;
+  });
+}
+function s220_statusClass(s){
+  return s==='Finalizado'?'done':s==='En taller'?'workshop':s==='Observado'?'obs':s==='Registrado'||s==='Retirado'?'reg':'pend';
+}
+function s220_card(q,r,idx){
+  return `<div class="execCard ${s220_statusClass(r.estado)}">
+    <div class="execCardHead">
+      <div><b>Equipo ${s220_pad(r.item,r.totalItems)} / ${r.totalItems}</b><h3>${s220_e(r.tipoEquipo)}</h3></div>
+      <select class="statusSelect" onchange="s220_update('${q.id}',${idx},'estado',this.value)">
+        ${['Pendiente','Registrado','Retirado','En taller','Finalizado','Observado'].map(s=>`<option ${r.estado===s?'selected':''}>${s}</option>`).join('')}
+      </select>
+    </div>
+    <div class="mobileGrid">
+      <label><b>Marca</b><input value="${s220_e(r.marca||'')}" placeholder="Marca" oninput="s220_update('${q.id}',${idx},'marca',this.value)"></label>
+      <label><b>Modelo</b><input value="${s220_e(r.modelo||'')}" placeholder="Modelo" oninput="s220_update('${q.id}',${idx},'modelo',this.value)"></label>
+      <label><b>Serie</b><input value="${s220_e(r.serie||'')}" placeholder="Serie" oninput="s220_update('${q.id}',${idx},'serie',this.value)"></label>
+      <label><b>Patrimonial</b><input value="${s220_e(r.patrimonial||r.codigoPatrimonial||'')}" placeholder="Código patrimonial" oninput="s220_update('${q.id}',${idx},'patrimonial',this.value);s220_update('${q.id}',${idx},'codigoPatrimonial',this.value)"></label>
+      <label><b>Ubicación</b><input value="${s220_e(r.ubicacion||'')}" placeholder="Área / ubicación" oninput="s220_update('${q.id}',${idx},'ubicacion',this.value)"></label>
+      <label><b>Fecha retiro</b><input type="date" value="${s220_e(r.fechaRetiro||'')}" onchange="s220_update('${q.id}',${idx},'fechaRetiro',this.value)"></label>
+    </div>
+    <details>
+      <summary>Actividades del equipo</summary>
+      <div class="actList">${(r.actividades||[]).map((a,ai)=>`<div class="actItem"><span>${s220_e(a.descripcion)}</span><select onchange="s220_updateAct('${q.id}',${idx},${ai},'estado',this.value)">${['Pendiente','En proceso','Terminado','Conforme','Observado'].map(s=>`<option ${a.estado===s?'selected':''}>${s}</option>`).join('')}</select></div>`).join('')||'<small>Sin actividades.</small>'}</div>
+    </details>
+    <details>
+      <summary>Recojo / traslado</summary>
+      <label><b>Observación de recojo</b><textarea placeholder="Estado inicial, accesorios, condiciones de retiro..." oninput="s220_update('${q.id}',${idx},'observacionRecojo',this.value)">${s220_e(r.observacionRecojo||'')}</textarea></label>
+    </details>
+    <details>
+      <summary>Calibración / taller</summary>
+      <div class="mobileGrid">
+        <label><b>Código de calibración</b><input value="${s220_e(r.codigoCalibracion||'')}" placeholder="Ej.: CAL-2026-001" oninput="s220_update('${q.id}',${idx},'codigoCalibracion',this.value)"></label>
+        <label><b>Resultado</b><input value="${s220_e(r.resultado||'')}" placeholder="Aprobado / Observado" oninput="s220_update('${q.id}',${idx},'resultado',this.value)"></label>
+      </div>
+      <label><b>Observación técnica</b><textarea placeholder="Observación técnica final..." oninput="s220_update('${q.id}',${idx},'observacionTecnica',this.value)">${s220_e(r.observacionTecnica||'')}</textarea></label>
+    </details>
+    <details>
+      <summary>Evidencias</summary>
+      <div class="photoGrid">
+        <label class="photoBtn">📷 Antes<input type="file" accept="image/*" capture="environment" onchange="s220_file('${q.id}',${idx},'evidenciaAntes',this.files[0])"><small>${s220_e(r.evidenciaAntesNombre||'')}</small></label>
+        <label class="photoBtn">📷 Durante<input type="file" accept="image/*" capture="environment" onchange="s220_file('${q.id}',${idx},'evidenciaDurante',this.files[0])"><small>${s220_e(r.evidenciaDuranteNombre||'')}</small></label>
+        <label class="photoBtn">📷 Después<input type="file" accept="image/*" capture="environment" onchange="s220_file('${q.id}',${idx},'evidenciaDespues',this.files[0])"><small>${s220_e(r.evidenciaDespuesNombre||'')}</small></label>
+      </div>
+    </details>
+  </div>`;
+}
+
+views['Ejecución']=function(){
+  const qs=s220_cots();
+  if(!qs.length)return `<section class="wrap">${back()}<h2>Ejecución</h2><p class="notice">No hay cotizaciones para la empresa activa.</p></section>`;
+  let qid=s220_selQid();
+  let q=qs.find(x=>x.id===qid)||qs[0];
+  s220_setQid(q.id);
+  const auth=!!(q.ordenNumero&&q.siaf);
+  if(!auth){
+    return `<section class="wrap">${back()}<h2>Ejecución técnica</h2>
+    <p class="notice"><b>Empresa activa:</b> ${s220_e(s220_activeEmpresa().nombre||'-')}. Aquí inicia el flujo técnico sin costos.</p>
+    <div class="card">
+      <label class="fieldHint"><b>Cotización seleccionada</b><small>Selecciona la cotización que pasará a ejecución.</small>
+        <select onchange="s220_setQid(this.value);render()">${qs.map(x=>`<option value="${x.id}" ${x.id===q.id?'selected':''}>${s220_e(s220_code(x))} - ${s220_e(s220_cliente(x))}</option>`).join('')}</select>
+      </label>
+    </div>
+    <div class="card"><h3>Autorizar ejecución</h3>
+      <p>Registra orden y SIAF para generar los equipos individuales. Serie, patrimonial y ubicación se llenan recién en campo.</p>
+      <div class="grid">
+        <label class="fieldHint"><b>Tipo de orden</b><small>Documento que autoriza el servicio.</small><select id="s220_tipo"><option>Orden de servicio</option><option>Orden de compra</option></select></label>
+        <label class="fieldHint"><b>N° orden</b><small>Número de OC/OS.</small><input id="s220_orden" placeholder="N° orden"></label>
+        <label class="fieldHint"><b>N° SIAF</b><small>Expediente SIAF.</small><input id="s220_siaf" placeholder="N° SIAF"></label>
+        <label class="fieldHint"><b>Fecha</b><small>Fecha de autorización.</small><input id="s220_fecha" type="date" value="${new Date().toISOString().slice(0,10)}"></label>
+      </div>
+      <div class="bar"><button class="btn green" onclick="s220_authorize('${q.id}')">Autorizar e iniciar ejecución</button></div>
+    </div></section>`;
+  }
+  const resumen=s220_resumen(q);
+  const rows=resumen.rows;
+  const tipos=Object.keys(resumen.tipos);
+  const filtered=s220_filter(q,rows);
+  return `<section class="wrap execMobile">${back()}<h2>Ejecución técnica</h2>
+    <p class="notice"><b>Cotización:</b> ${s220_e(s220_code(q))} | <b>Cliente:</b> ${s220_e(s220_cliente(q))} | <b>OS/OC:</b> ${s220_e(q.ordenNumero)} | <b>SIAF:</b> ${s220_e(q.siaf)}</p>
+    <div class="saveStatus">${s220_e(q.execSaveStatus||'✓ Listo para registrar')}</div>
+    <div class="summaryGrid">
+      <div><b>Total</b><strong>${resumen.total}</strong></div>
+      <div><b>Registrados</b><strong>${resumen.registrados}</strong></div>
+      <div><b>Pendientes</b><strong>${resumen.pendientes}</strong></div>
+      <div><b>En taller</b><strong>${resumen.taller}</strong></div>
+      <div><b>Finalizados</b><strong>${resumen.finalizados}</strong></div>
+      <div><b>Observados</b><strong>${resumen.observados}</strong></div>
+    </div>
+    <div class="typeSummary">${tipos.map(t=>`<span>${s220_e(t)}: <b>${resumen.tipos[t].registrados}/${resumen.tipos[t].total}</b></span>`).join('')}</div>
+    <div class="card stickyFilters">
+      <h3>Filtros</h3>
+      <div class="grid">
+        <label class="fieldHint"><b>Tipo</b><select onchange="s220_setFilter('${q.id}','tipo',this.value)"><option>Todos</option>${tipos.map(t=>`<option ${q.execFilter?.tipo===t?'selected':''}>${s220_e(t)}</option>`).join('')}</select></label>
+        <label class="fieldHint"><b>Estado</b><select onchange="s220_setFilter('${q.id}','estado',this.value)">${['Todos','Pendiente','Registrado','Retirado','En taller','Finalizado','Observado'].map(s=>`<option ${q.execFilter?.estado===s?'selected':''}>${s}</option>`).join('')}</select></label>
+        <label class="fieldHint"><b>Buscar</b><input value="${s220_e(q.execFilter?.buscar||'')}" placeholder="Serie, patrimonial, ubicación, código..." onchange="s220_setFilter('${q.id}','buscar',this.value)"></label>
+      </div>
+      <div class="bar"><button class="btn" onclick="s220_reset('${q.id}')">Regenerar equipos</button></div>
+    </div>
+    <div class="execList">${filtered.map(r=>s220_card(q,r,rows.indexOf(r))).join('')||'<p class="notice">Sin equipos para mostrar con el filtro actual.</p>'}</div>
+  </section>`;
+};
+
+render=function(){
+  if(typeof ensureActiveEmpresa==='function')ensureActiveEmpresa();
+  if(typeof s21_allEmpresas==='function')s21_allEmpresas();
+  app.innerHTML=`<header class="top"><div><h1>${VERSION_EJECUCION_MOBILE}</h1><b>Ejecución mobile first + autosave + resumen por equipos</b></div><div class="tag">${cloud}</div></header><nav class="nav">${['Dashboard','Empresas','Clientes','Cotizaciones','Ejecución','Actas','Informes','Inventario','Configuración'].map(x=>`<button class="${tab===x?'active':''}" onclick="tab='${x}';draft=null;render()">${x}</button>`).join('')}</nav><main>${(views[tab]||views.Dashboard)()}</main>`;
+  bind(); if(typeof initSignaturePads==='function')initSignaturePads();
+};
+render();
