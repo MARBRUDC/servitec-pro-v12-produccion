@@ -88,3 +88,34 @@ button:disabled{opacity:.45;cursor:not-allowed}
   .execCardHead h3{font-size:26px}
   .stickyFilters{position:sticky;top:0;z-index:5}
 }
+
+/* V13.22.1 Mobile UX */
+.uxMobile .compactNotice{font-size:14px;padding:10px 12px}
+.uxMobile .compactSummary{gap:6px;margin:8px 0}
+.uxMobile .compactSummary div{padding:8px 10px;border-radius:12px}
+.uxMobile .compactSummary b{font-size:12px}
+.uxMobile .compactSummary strong{font-size:22px}
+.uxMobile .compactTypes{margin:6px 0}
+.uxMobile .compactTypes span{padding:6px 9px;font-size:13px}
+.filterCompact{background:#eefbff;border:1px solid #85e2ef;border-radius:16px;padding:10px;margin:10px 0}
+.filterToggle{width:100%;border:none;background:#fff;border-radius:14px;padding:12px 14px;font-size:16px;font-weight:900;color:#0f62fe;box-shadow:0 6px 18px rgba(0,0,0,.05)}
+.filterPanel{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px}
+.filterPanel label{font-weight:800;color:#00224d}
+.filterPanel select,.filterPanel input{width:100%;font-size:16px;min-height:42px;border-radius:12px}
+.compactExecList{gap:10px}
+.uxMobile .execCard{padding:10px 12px;border-radius:14px}
+.uxMobile .execCardHead{padding-bottom:7px;margin-bottom:8px}
+.uxMobile .execCardHead h3{font-size:21px}
+.uxMobile .mobileGrid{gap:7px}
+.uxMobile .mobileGrid input,.uxMobile .execCard textarea,.uxMobile .execCard input,.uxMobile .execCard select{min-height:40px;font-size:15px}
+.uxMobile .execCard details{padding-top:7px;margin-top:7px}
+.uxMobile .execCard summary{font-size:15px}
+@media(max-width:760px){
+  .filterPanel{grid-template-columns:1fr}
+  .uxMobile .compactSummary{grid-template-columns:repeat(3,1fr)}
+  .uxMobile .compactSummary strong{font-size:20px}
+  .filterCompact{position:relative;z-index:1}
+  .uxMobile .execCard{margin:0;padding:10px}
+  .uxMobile .photoGrid{grid-template-columns:1fr}
+  .uxMobile .mobileGrid label b{font-size:14px}
+}

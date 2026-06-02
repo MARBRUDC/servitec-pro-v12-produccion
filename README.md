@@ -1,30 +1,22 @@
-# SERVITEC PRO V13.22.0 EJECUCIÓN MOBILE FIRST
+# SERVITEC PRO V13.22.1 MOBILE UX
 
-Corrección enfocada solo en el módulo Ejecución.
+Corrección visual del módulo Ejecución para trabajo en celular.
 
 Incluye:
-- Vista pensada para celular.
-- Tarjeta por equipo, no tabla.
-- Resumen general:
-  - Total
-  - Registrados
-  - Pendientes
-  - En taller
-  - Finalizados
-  - Observados
-- Resumen por tipo de equipo.
-- Autosave al escribir o cambiar estado.
-- Serie, patrimonial y ubicación se llenan solo en ejecución.
-- Evidencias con botones tipo cámara:
-  - Antes
-  - Durante
-  - Después
-- Un equipo por unidad cotizada.
-- Las actividades quedan dentro de cada equipo.
+- Filtros colapsables.
+- El bloque de filtros ya no tapa la ficha del equipo.
+- Resumen más compacto.
+- Tarjetas de ejecución más compactas.
+- Mantiene autosave.
+- Mantiene fotos Antes / Durante / Después.
+- No toca Empresas, Clientes, Cotizaciones ni PDF.
 
-No toca:
-- Empresas
-- Clientes
-- Cotizaciones
-- PDF comercial
-- Supabase schema
+Archivos incluidos:
+- build.js
+- index.html
+- main.js
+- package.json
+- README.md
+- server.js
+- styles.css
+- supabase-schema.sql

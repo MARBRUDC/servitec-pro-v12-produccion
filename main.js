@@ -2273,3 +2273,94 @@ render=function(){
   bind(); if(typeof initSignaturePads==='function')initSignaturePads();
 };
 render();
+
+
+/* ============================================================
+   SERVITEC PRO V13.22.1 - MOBILE UX
+   Corrección puntual de vista Ejecución:
+   - Filtros colapsables para celular.
+   - El bloque de filtros ya no tapa el formulario del equipo.
+   - Tarjetas más compactas.
+   - Mantiene autosave y generación mobile first.
+============================================================ */
+const VERSION_EJECUCION_MOBILE_UX='SERVITEC PRO V13.22.1 MOBILE UX';
+
+function s221_toggleFilters(qid){
+  const q=(state.cotizaciones||[]).find(x=>x.id===qid); if(!q)return;
+  q.execFilter=q.execFilter||{};
+  q.execFilter.open=!q.execFilter.open;
+  try{persist&&persist()}catch(e){}
+  render();
+}
+function s221_filterBox(q,resumen,tipos){
+  const open=!!q.execFilter?.open;
+  return `<div class="filterCompact">
+    <button class="filterToggle" onclick="s221_toggleFilters('${q.id}')">${open?'▲ Ocultar filtros':'🔍 Mostrar filtros'}</button>
+    ${open?`<div class="filterPanel">
+      <label><b>Tipo</b><select onchange="s220_setFilter('${q.id}','tipo',this.value)">
+        <option>Todos</option>${tipos.map(t=>`<option ${q.execFilter?.tipo===t?'selected':''}>${s220_e(t)}</option>`).join('')}
+      </select></label>
+      <label><b>Estado</b><select onchange="s220_setFilter('${q.id}','estado',this.value)">
+        ${['Todos','Pendiente','Registrado','Retirado','En taller','Finalizado','Observado'].map(s=>`<option ${q.execFilter?.estado===s?'selected':''}>${s}</option>`).join('')}
+      </select></label>
+      <label><b>Buscar</b><input value="${s220_e(q.execFilter?.buscar||'')}" placeholder="Serie, patrimonial, ubicación, código..." onchange="s220_setFilter('${q.id}','buscar',this.value)"></label>
+      <button class="btn" onclick="s220_reset('${q.id}')">Regenerar equipos</button>
+    </div>`:''}
+  </div>`;
+}
+
+/* Reemplazo seguro solo de vista Ejecución */
+views['Ejecución']=function(){
+  const qs=s220_cots();
+  if(!qs.length)return `<section class="wrap">${back()}<h2>Ejecución</h2><p class="notice">No hay cotizaciones para la empresa activa.</p></section>`;
+  let qid=s220_selQid();
+  let q=qs.find(x=>x.id===qid)||qs[0];
+  s220_setQid(q.id);
+  const auth=!!(q.ordenNumero&&q.siaf);
+  if(!auth){
+    return `<section class="wrap">${back()}<h2>Ejecución técnica</h2>
+    <p class="notice"><b>Empresa activa:</b> ${s220_e(s220_activeEmpresa().nombre||'-')}. Aquí inicia el flujo técnico sin costos.</p>
+    <div class="card">
+      <label class="fieldHint"><b>Cotización seleccionada</b><small>Selecciona la cotización que pasará a ejecución.</small>
+        <select onchange="s220_setQid(this.value);render()">${qs.map(x=>`<option value="${x.id}" ${x.id===q.id?'selected':''}>${s220_e(s220_code(x))} - ${s220_e(s220_cliente(x))}</option>`).join('')}</select>
+      </label>
+    </div>
+    <div class="card"><h3>Autorizar ejecución</h3>
+      <p>Registra orden y SIAF para generar los equipos individuales. Serie, patrimonial y ubicación se llenan recién en campo.</p>
+      <div class="grid">
+        <label class="fieldHint"><b>Tipo de orden</b><small>Documento que autoriza el servicio.</small><select id="s220_tipo"><option>Orden de servicio</option><option>Orden de compra</option></select></label>
+        <label class="fieldHint"><b>N° orden</b><small>Número de OC/OS.</small><input id="s220_orden" placeholder="N° orden"></label>
+        <label class="fieldHint"><b>N° SIAF</b><small>Expediente SIAF.</small><input id="s220_siaf" placeholder="N° SIAF"></label>
+        <label class="fieldHint"><b>Fecha</b><small>Fecha de autorización.</small><input id="s220_fecha" type="date" value="${new Date().toISOString().slice(0,10)}"></label>
+      </div>
+      <div class="bar"><button class="btn green" onclick="s220_authorize('${q.id}')">Autorizar e iniciar ejecución</button></div>
+    </div></section>`;
+  }
+  const resumen=s220_resumen(q);
+  const rows=resumen.rows;
+  const tipos=Object.keys(resumen.tipos);
+  const filtered=s220_filter(q,rows);
+  return `<section class="wrap execMobile uxMobile">${back()}<h2>Ejecución técnica</h2>
+    <p class="notice compactNotice"><b>Cotización:</b> ${s220_e(s220_code(q))} | <b>Cliente:</b> ${s220_e(s220_cliente(q))} | <b>OS/OC:</b> ${s220_e(q.ordenNumero)} | <b>SIAF:</b> ${s220_e(q.siaf)}</p>
+    <div class="saveStatus">${s220_e(q.execSaveStatus||'✓ Listo para registrar')}</div>
+    <div class="summaryGrid compactSummary">
+      <div><b>Total</b><strong>${resumen.total}</strong></div>
+      <div><b>Registrados</b><strong>${resumen.registrados}</strong></div>
+      <div><b>Pendientes</b><strong>${resumen.pendientes}</strong></div>
+      <div><b>Taller</b><strong>${resumen.taller}</strong></div>
+      <div><b>Finalizados</b><strong>${resumen.finalizados}</strong></div>
+      <div><b>Observados</b><strong>${resumen.observados}</strong></div>
+    </div>
+    <div class="typeSummary compactTypes">${tipos.map(t=>`<span>${s220_e(t)}: <b>${resumen.tipos[t].registrados}/${resumen.tipos[t].total}</b></span>`).join('')}</div>
+    ${s221_filterBox(q,resumen,tipos)}
+    <div class="execList compactExecList">${filtered.map(r=>s220_card(q,r,rows.indexOf(r))).join('')||'<p class="notice">Sin equipos para mostrar con el filtro actual.</p>'}</div>
+  </section>`;
+};
+
+render=function(){
+  if(typeof ensureActiveEmpresa==='function')ensureActiveEmpresa();
+  if(typeof s21_allEmpresas==='function')s21_allEmpresas();
+  app.innerHTML=`<header class="top"><div><h1>${VERSION_EJECUCION_MOBILE_UX}</h1><b>Ejecución mobile first + filtros plegables + autosave</b></div><div class="tag">${cloud}</div></header><nav class="nav">${['Dashboard','Empresas','Clientes','Cotizaciones','Ejecución','Actas','Informes','Inventario','Configuración'].map(x=>`<button class="${tab===x?'active':''}" onclick="tab='${x}';draft=null;render()">${x}</button>`).join('')}</nav><main>${(views[tab]||views.Dashboard)()}</main>`;
+  bind(); if(typeof initSignaturePads==='function')initSignaturePads();
+};
+render();
