@@ -1,0 +1,31 @@
+PLAN DE PRUEBAS V13.20.5
+
+1. EMPRESAS
+- Seleccionar empresa.
+- Cambiar condición comercial.
+- Guardar.
+- Recargar PC.
+- Abrir en celular.
+Resultado esperado: mismos datos.
+
+2. CLIENTES
+- Crear cliente.
+- Seleccionar cliente.
+- Crear establecimiento.
+- Seleccionar establecimiento.
+- Crear área usuaria.
+Resultado esperado: el área queda asociada al establecimiento y cliente correctos.
+
+3. COTIZACIONES
+- Crear cotización.
+- Generar PDF.
+- Revisar condiciones comerciales y firma.
+Resultado esperado: PDF sin textos superpuestos.
+
+4. MULTIEMPRESA
+- Cambiar empresa activa.
+- Revisar cotizaciones y clientes.
+Resultado esperado: solo se ven datos de la empresa activa.
+
+NO PROBAR ROLES todavía.
+Primero cerrar base operativa.

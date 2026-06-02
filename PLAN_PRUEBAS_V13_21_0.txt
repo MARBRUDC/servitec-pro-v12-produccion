@@ -1,0 +1,27 @@
+PLAN DE PRUEBAS V13.21.0
+
+1. EMPRESAS
+- Seleccionar empresa.
+- Cambiar forma de pago.
+- Guardar cambios.
+- Recargar PC.
+- Revisar en celular.
+
+2. CLIENTES
+- Crear cliente.
+- Crear establecimiento.
+- Crear área usuaria.
+- Recargar.
+- Confirmar persistencia.
+
+3. COTIZACIONES
+- Crear cotización.
+- Agregar equipos solo con Tipo/Cantidad/Marca/Modelo.
+- Confirmar que NO aparecen Serie, Patrimonial, Ubicación.
+- Generar PDF.
+
+4. MULTIEMPRESA
+- Cambiar empresa activa.
+- Confirmar que clientes y cotizaciones no se mezclan.
+
+NO PROBAR ROLES TODAVÍA.
