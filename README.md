@@ -1,23 +1,20 @@
-# SERVITEC PRO V13.21.0 ADMINISTRADOR ESTABLE
+# SERVITEC PRO V13.21.1 ADMINISTRADOR ESTABLE
 
-Versión consolidada del modelo Administrador.
+Corrección puntual sobre V13.21.0:
 
-Objetivo:
-Cerrar el flujo administrativo:
-Empresa → Cliente → Establecimiento → Área Usuaria → Cotización → PDF → Ejecutar.
+- Cliente guarda y recupera correctamente:
+  - Dirección
+  - Teléfono
+  - Correo
+  - Responsable
+- Se agregan alias de compatibilidad para datos antiguos.
+- Se fuerza persistencia en nube cuando existe saveCloud().
+- Mantiene Empresas, Clientes jerárquicos, Cotizaciones y PDF profesional.
 
-Incluye:
-- Empresas con selector único, botón Guardar, activar, eliminar.
-- Configuración comercial guiada.
-- Datos bancarios, contacto comercial y correlativos.
-- Clientes jerárquicos: Cliente → Establecimiento → Área Usuaria.
-- Cotizaciones con selector superior y acciones superiores.
-- Equipos de cotización sin Serie, Patrimonial ni Ubicación.
-- Serie, Patrimonial y Ubicación quedan para la Ejecución.
-- Mantiene Supabase existente mediante app_state.
-
-Pruebas obligatorias:
-1. Empresas: editar y guardar condiciones comerciales.
-2. Clientes: crear cliente, establecimiento y área.
-3. Cotización: crear cotización y generar PDF.
-4. Cambiar empresa activa y verificar que no se mezclen datos.
+Prueba:
+1. Seleccionar cliente.
+2. Llenar dirección, teléfono, correo y responsable.
+3. Guardar.
+4. Presionar F5.
+5. Volver a seleccionar cliente.
+6. Los campos deben aparecer completos.

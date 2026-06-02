@@ -1659,3 +1659,97 @@ render=function(){
   bind(); if(typeof initSignaturePads==='function')initSignaturePads();
 };
 render();
+
+
+/* ============================================================
+   SERVITEC PRO V13.21.1 - CLIENTES PERSISTENTES
+   Corrección puntual:
+   - Cliente guarda y recupera Dirección, Teléfono, Correo y Responsable.
+   - Compatibilidad con nombres antiguos: dir/address, phone, email, contacto.
+   - Fuerza persistencia en nube si existe saveCloud().
+============================================================ */
+const VERSION_ADMIN_ESTABLE_211='SERVITEC PRO V13.21.1 ADMINISTRADOR ESTABLE';
+
+function s211_pick(obj, keys, fallback=''){
+  obj=obj||{};
+  for(const k of keys){
+    if(obj[k]!==undefined && obj[k]!==null && String(obj[k]).trim()!=='') return obj[k];
+  }
+  return fallback;
+}
+async function s211_persist(){
+  try{ if(typeof persist==='function') persist(); }catch(e){}
+  try{ if(typeof saveCloud==='function') await saveCloud(); }catch(e){}
+}
+function s211_clienteDataFromForm(){
+  return {
+    nombre: (document.getElementById('s21_cli_nombre')?.value||'').trim(),
+    ruc: document.getElementById('s21_cli_ruc')?.value||'',
+    direccion: document.getElementById('s21_cli_dir')?.value||'',
+    dir: document.getElementById('s21_cli_dir')?.value||'',
+    address: document.getElementById('s21_cli_dir')?.value||'',
+    telefono: document.getElementById('s21_cli_tel')?.value||'',
+    phone: document.getElementById('s21_cli_tel')?.value||'',
+    correo: document.getElementById('s21_cli_cor')?.value||'',
+    email: document.getElementById('s21_cli_cor')?.value||'',
+    responsable: document.getElementById('s21_cli_resp')?.value||'',
+    contacto: document.getElementById('s21_cli_resp')?.value||''
+  };
+}
+s21_saveCli=async function(){
+  let id=s21_ls(s21_cliKey());
+  const data=s211_clienteDataFromForm();
+  if(!data.nombre)return alert('Ingresa nombre del cliente.');
+  state.clientes=state.clientes||[];
+  if(id==='__new__'||!state.clientes.find(c=>c.id===id)){
+    id=s21_uid();
+    state.clientes.push({id,empresaId:s21_empId(),...data,establecimientos:[]});
+  }else{
+    state.clientes=state.clientes.map(c=>{
+      if(c.id!==id)return c;
+      return {
+        ...c,
+        ...data,
+        empresaId:c.empresaId||s21_empId(),
+        establecimientos:c.establecimientos||[]
+      };
+    });
+  }
+  s21_ls(s21_cliKey(),id);
+  await s211_persist();
+  alert('Cliente guardado correctamente.');
+  render();
+};
+
+views.Clientes=function(){
+  const cs=s21_clientes(), c=s21_cliSel(), cNew=s21_ls(s21_cliKey())==='__new__'||!c;
+  const ests=(c&&c.establecimientos)||[], e=c?s21_estSel(c):null, eNew=c&&(s21_ls(s21_estKey(c.id))==='__new__'||!e);
+  const areas=(e&&e.areas)||[], a=e?s21_areaSel(e):null, aNew=e&&(s21_ls(s21_areaKey(e.id))==='__new__'||!a);
+
+  const cDireccion=s211_pick(c,['direccion','dir','address']);
+  const cTelefono=s211_pick(c,['telefono','phone','celular']);
+  const cCorreo=s211_pick(c,['correo','email']);
+  const cResponsable=s211_pick(c,['responsable','contacto','representante']);
+
+  return `<section class="wrap">${back()}<h2>Clientes</h2><p class="notice"><b>Empresa activa:</b> ${s21_escape(s21_activeEmpresa().nombre||'-')}</p>
+  <div class="card"><h3>Cliente</h3><label class="fieldHint"><b>Cliente seleccionado</b><small>Selecciona, crea o edita un cliente.</small><select onchange="s21_selectCli(this.value)"><option value="__new__" ${cNew?'selected':''}>+ Nuevo cliente</option>${cs.map(x=>`<option value="${x.id}" ${c&&x.id===c.id?'selected':''}>${s21_escape(x.nombre)}</option>`).join('')}</select></label><div class="bar"><button class="btn" onclick="s21_newCli()">Nuevo</button><button class="btn green" onclick="s21_saveCli()">Guardar</button><button class="btn danger" onclick="s21_delCli()">Eliminar</button></div>
+  <div class="grid">
+    <label class="fieldHint"><b>Nombre / razón social</b><small>Se imprime en documentos.</small><input id="s21_cli_nombre" value="${s21_escape(cNew?'':(c.nombre||''))}"></label>
+    <label class="fieldHint"><b>RUC</b><small>Documento tributario.</small><input id="s21_cli_ruc" value="${s21_escape(cNew?'':(c.ruc||''))}"></label>
+    <label class="fieldHint"><b>Dirección</b><small>Dirección del cliente.</small><input id="s21_cli_dir" value="${s21_escape(cNew?'':cDireccion)}"></label>
+    <label class="fieldHint"><b>Teléfono</b><small>Contacto del cliente.</small><input id="s21_cli_tel" value="${s21_escape(cNew?'':cTelefono)}"></label>
+    <label class="fieldHint"><b>Correo</b><small>Correo del cliente.</small><input id="s21_cli_cor" value="${s21_escape(cNew?'':cCorreo)}"></label>
+    <label class="fieldHint"><b>Responsable</b><small>Contacto principal.</small><input id="s21_cli_resp" value="${s21_escape(cNew?'':cResponsable)}"></label>
+  </div></div>
+  <div class="card"><h3>Establecimiento</h3>${c?`<label class="fieldHint"><b>Establecimiento seleccionado</b><small>Depende del cliente seleccionado.</small><select onchange="s21_selectEst(this.value)"><option value="__new__" ${eNew?'selected':''}>+ Nuevo establecimiento</option>${ests.map(x=>`<option value="${x.id}" ${e&&x.id===e.id?'selected':''}>${s21_escape(x.nombre)}</option>`).join('')}</select></label><div class="bar"><button class="btn" onclick="s21_newEst()">Nuevo</button><button class="btn green" onclick="s21_saveEst()">Guardar</button><button class="btn danger" onclick="s21_delEst()">Eliminar</button></div><div class="grid">${['nombre|Nombre establecimiento|Ej.: Hospital, centro de salud, sede|s21_est_nombre','direccion|Dirección|Dirección del establecimiento|s21_est_dir','responsable|Responsable|Responsable del establecimiento|s21_est_resp','telefono|Teléfono|Contacto del establecimiento|s21_est_tel','correo|Correo|Correo del establecimiento|s21_est_cor'].map(s=>{let [k,l,h,id]=s.split('|');return `<label class="fieldHint"><b>${l}</b><small>${h}</small><input id="${id}" value="${s21_escape(eNew?'':s211_pick(e,[k,k==='direccion'?'dir':'',k==='telefono'?'phone':'',k==='correo'?'email':''].filter(Boolean)))}"></label>`}).join('')}</div>`:'<p class="notice">Guarda primero un cliente.</p>'}</div>
+  <div class="card"><h3>Área usuaria</h3>${e?`<label class="fieldHint"><b>Área usuaria seleccionada</b><small>Depende del establecimiento seleccionado.</small><select onchange="s21_selectArea(this.value)"><option value="__new__" ${aNew?'selected':''}>+ Nueva área usuaria</option>${areas.map(x=>`<option value="${x.id}" ${a&&x.id===a.id?'selected':''}>${s21_escape(x.nombre)}</option>`).join('')}</select></label><div class="bar"><button class="btn" onclick="s21_newArea()">Nueva</button><button class="btn green" onclick="s21_saveArea()">Guardar</button><button class="btn danger" onclick="s21_delArea()">Eliminar</button></div><div class="grid">${['nombre|Nombre del área|Ej.: Odontología, Laboratorio|s21_area_nombre','responsable|Responsable del área|Aparece en acta|s21_area_resp','cargo|Cargo|Cargo del responsable|s21_area_cargo','dni|DNI|DNI del responsable|s21_area_dni','telefono|Teléfono|Contacto de área|s21_area_tel','correo|Correo|Correo del área|s21_area_cor'].map(s=>{let [k,l,h,id]=s.split('|');return `<label class="fieldHint"><b>${l}</b><small>${h}</small><input id="${id}" value="${s21_escape(aNew?'':s211_pick(a,[k,k==='telefono'?'phone':'',k==='correo'?'email':''].filter(Boolean)))}"></label>`}).join('')}</div>`:'<p class="notice">Guarda primero un establecimiento.</p>'}</div>
+  <h3>Lista de clientes</h3><div class="tableWrap"><table><thead><tr><th>Cliente</th><th>RUC</th><th>Dirección</th><th>Teléfono</th><th>Establecimientos</th><th>Áreas</th></tr></thead><tbody>${cs.map(x=>`<tr onclick="s21_selectCli('${x.id}')" style="cursor:pointer"><td><b>${s21_escape(x.nombre)}</b></td><td>${s21_escape(x.ruc||'-')}</td><td>${s21_escape(s211_pick(x,['direccion','dir','address'],'-'))}</td><td>${s21_escape(s211_pick(x,['telefono','phone','celular'],'-'))}</td><td>${(x.establecimientos||[]).length}</td><td>${(x.establecimientos||[]).reduce((n,e)=>n+(e.areas||[]).length,0)}</td></tr>`).join('')||'<tr><td colspan="6">Sin clientes.</td></tr>'}</tbody></table></div></section>`;
+};
+
+render=function(){
+  if(typeof ensureActiveEmpresa==='function')ensureActiveEmpresa();
+  s21_allEmpresas();
+  app.innerHTML=`<header class="top"><div><h1>${VERSION_ADMIN_ESTABLE_211}</h1><b>Modelo Administrador: clientes persistentes + empresas + cotizaciones + PDF profesional</b></div><div class="tag">${cloud}</div></header><nav class="nav">${['Dashboard','Empresas','Clientes','Cotizaciones','Ejecución','Actas','Informes','Inventario','Configuración'].map(x=>`<button class="${tab===x?'active':''}" onclick="tab='${x}';draft=null;render()">${x}</button>`).join('')}</nav><main>${views[tab]()}</main>`;
+  bind(); if(typeof initSignaturePads==='function')initSignaturePads();
+};
+render();
