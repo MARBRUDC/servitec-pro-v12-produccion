@@ -1753,3 +1753,192 @@ render=function(){
   bind(); if(typeof initSignaturePads==='function')initSignaturePads();
 };
 render();
+
+
+/* ============================================================
+   SERVITEC PRO V13.21.2 - RECUPERACIÓN EJECUCIÓN
+   Corrección puntual:
+   - El menú Ejecución vuelve a abrir siempre.
+   - Vista independiente de funciones antiguas duplicadas.
+   - Genera ítems técnicos desde la cotización:
+     Tipo/Equipo + cantidad + actividades.
+   - En ejecución recién se llena Serie, Patrimonial y Ubicación.
+   - No muestra costos.
+============================================================ */
+const VERSION_ADMIN_ESTABLE_212='SERVITEC PRO V13.21.2 EJECUCIÓN RECUPERADA';
+
+function s212_e(v){return (typeof s21_escape==='function')?s21_escape(v):String(v||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('"','&quot;')}
+function s212_uid(){return (typeof s21_uid==='function')?s21_uid():Math.random().toString(36).slice(2,9)}
+function s212_empId(){return (typeof s21_empId==='function')?s21_empId():(state.activeEmpresaId||'')}
+function s212_activeEmpresa(){return (typeof s21_activeEmpresa==='function')?s21_activeEmpresa():((state.empresas||[]).find(e=>e.id===s212_empId())||{})}
+function s212_persist(){try{persist&&persist()}catch(e){} try{saveCloud&&saveCloud()}catch(e){}}
+function s212_cots(){
+  const emp=s212_empId();
+  return (state.cotizaciones||[]).filter(q=>(q.empresaId||q.empresa_id||emp)===emp);
+}
+function s212_selectedExecId(){
+  try{return localStorage.getItem('servitec_exec_qid')||''}catch(e){return ''}
+}
+function s212_setExecId(id){
+  try{localStorage.setItem('servitec_exec_qid',id||'')}catch(e){}
+}
+function s212_estado(q){return q.estado||((q.ordenNumero&&q.siaf)?'En ejecución':'Cotización')}
+function s212_qty(e){return Math.max(1,parseInt(e.cantidad||e.qty||1,10)||1)}
+function s212_pad(n,total){return String(n).padStart(String(total||999).length,'0')}
+
+function s212_acts(q){
+  if(q.config && String(q.config).toLowerCase().includes('repuesto')) return q.repuestos||[];
+  if(q.acts&&q.acts.length)return q.acts;
+  if(q.actividades&&q.actividades.length)return q.actividades;
+  return [{id:'act_general',descripcion:q.tipo||'Actividad técnica'}];
+}
+function s212_baseRows(q){
+  const equipos=(q.equipos&&q.equipos.length?q.equipos:[{id:'eq_grupo',nombre:'Equipo',cantidad:1,marca:'',modelo:''}]);
+  const acts=s212_acts(q);
+  let total=equipos.reduce((s,e)=>s+s212_qty(e),0);
+  let idx=0, rows=[];
+  equipos.forEach(eq=>{
+    const qty=s212_qty(eq);
+    for(let n=1;n<=qty;n++){
+      idx++;
+      acts.forEach((a,ai)=>{
+        rows.push({
+          id:(eq.id||'eq')+'_'+idx+'_'+(a.id||ai),
+          item:idx,
+          totalItems:total,
+          tipoEquipo:eq.nombre||eq.tipo||'Equipo',
+          marca:eq.marca||'',
+          modelo:eq.modelo||'',
+          serie:'',
+          patrimonial:'',
+          codigoPatrimonial:'',
+          ubicacion:'',
+          actividad:a.descripcion||a.nombre||String(a)||'Actividad técnica',
+          estado:'Pendiente',
+          observacion:'',
+          evidencia:'',
+          evidenciaNombre:''
+        });
+      });
+    }
+  });
+  return rows;
+}
+function s212_ensureExecRows(q){
+  if(!q.execRows || !Array.isArray(q.execRows) || !q.execRows.length){
+    q.execRows=s212_baseRows(q);
+    s212_persist();
+  }
+  return q.execRows;
+}
+function s212_resumen(q){
+  const rows=s212_ensureExecRows(q);
+  const equiposUnicos={};
+  rows.forEach(r=>{equiposUnicos[r.item]=true});
+  const total=Object.keys(equiposUnicos).length;
+  const done=rows.filter(r=>['Terminado','Conforme'].includes(r.estado)).length;
+  const pending=rows.filter(r=>!['Terminado','Conforme'].includes(r.estado)).length;
+  const pct=rows.length?Math.round(done*100/rows.length):0;
+  const tipos={};
+  rows.forEach(r=>{tipos[r.tipoEquipo]=(tipos[r.tipoEquipo]||0)+0; if(!tipos['_'+r.item]){tipos[r.tipoEquipo]=(tipos[r.tipoEquipo]||0)+1; tipos['_'+r.item]=true;}});
+  return {rows,total,done,pending,pct,tipos};
+}
+function s212_updateRow(qid,i,field,val){
+  const q=(state.cotizaciones||[]).find(x=>x.id===qid); if(!q)return;
+  s212_ensureExecRows(q);
+  q.execRows[i]=q.execRows[i]||{};
+  q.execRows[i][field]=val;
+  q.estado='En ejecución';
+  s212_persist();
+}
+function s212_fileRow(qid,i,file){
+  const q=(state.cotizaciones||[]).find(x=>x.id===qid); if(!q||!file)return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    s212_ensureExecRows(q);
+    q.execRows[i].evidencia=reader.result;
+    q.execRows[i].evidenciaNombre=file.name;
+    q.estado='En ejecución';
+    s212_persist();
+    render();
+  };
+  reader.readAsDataURL(file);
+}
+function s212_authorize(qid){
+  const q=(state.cotizaciones||[]).find(x=>x.id===qid); if(!q)return;
+  const orden=(document.getElementById('s212_orden')?.value||'').trim();
+  const siaf=(document.getElementById('s212_siaf')?.value||'').trim();
+  if(!orden||!siaf)return alert('Registra N° de orden y N° SIAF.');
+  q.ordenTipo=document.getElementById('s212_tipo')?.value||'Orden de servicio';
+  q.ordenNumero=orden;
+  q.siaf=siaf;
+  q.fechaOrden=document.getElementById('s212_fecha')?.value||new Date().toISOString().slice(0,10);
+  q.estado='En ejecución';
+  q.execRows=s212_baseRows(q);
+  s212_persist();
+  render();
+}
+function s212_resetExec(qid){
+  const q=(state.cotizaciones||[]).find(x=>x.id===qid); if(!q)return;
+  if(!confirm('¿Regenerar la ejecución? Se perderán observaciones/evidencias cargadas.'))return;
+  q.execRows=s212_baseRows(q);
+  q.estado='En ejecución';
+  s212_persist();
+  render();
+}
+function s212_filterRows(q){
+  const rows=s212_ensureExecRows(q);
+  const tipo=document.getElementById('s212_filter_tipo')?.value || q.execFilter?.tipo || 'Todos';
+  const estado=document.getElementById('s212_filter_estado')?.value || q.execFilter?.estado || 'Todos';
+  const buscar=(document.getElementById('s212_search')?.value || q.execFilter?.buscar || '').toLowerCase();
+  return rows.filter(r=>{
+    if(tipo!=='Todos' && r.tipoEquipo!==tipo)return false;
+    if(estado!=='Todos' && r.estado!==estado)return false;
+    if(buscar){
+      const blob=[r.tipoEquipo,r.marca,r.modelo,r.serie,r.patrimonial,r.codigoPatrimonial,r.ubicacion,r.actividad,r.observacion].join(' ').toLowerCase();
+      if(!blob.includes(buscar))return false;
+    }
+    return true;
+  });
+}
+function s212_setFilter(qid,k,v){
+  const q=(state.cotizaciones||[]).find(x=>x.id===qid); if(!q)return;
+  q.execFilter=q.execFilter||{};
+  q.execFilter[k]=v;
+  s212_persist();
+  render();
+}
+
+views['Ejecución']=function(){
+  const qs=s212_cots();
+  if(!qs.length)return `<section class="wrap">${back()}<h2>Ejecución</h2><p class="notice">No hay cotizaciones para la empresa activa.</p></section>`;
+  let qid=s212_selectedExecId();
+  let q=qs.find(x=>x.id===qid)||qs[0];
+  s212_setExecId(q.id);
+  const auth=!!(q.ordenNumero&&q.siaf);
+  const resumen=auth?s212_resumen(q):null;
+  const tipos=auth?[...new Set((q.execRows||[]).map(r=>r.tipoEquipo))]:[];
+  const filtered=auth?s212_filterRows(q):[];
+  return `<section class="wrap">${back()}<h2>Ejecución técnica</h2>
+  <p class="notice"><b>Empresa activa:</b> ${s212_e(s212_activeEmpresa().nombre||'-')}. La ejecución no muestra costos; aquí se registran datos técnicos reales.</p>
+  <div class="card">
+    <label class="fieldHint"><b>Cotización / orden seleccionada</b><small>Selecciona la cotización que pasará a ejecución.</small>
+    <select onchange="s212_setExecId(this.value);render()">${qs.map(x=>`<option value="${x.id}" ${x.id===q.id?'selected':''}>${s212_e(x.numero||x.codigo||x.id)} - ${s212_e(x.clienteNombre||'-')} - ${s212_e(s212_estado(x))}</option>`).join('')}</select></label>
+  </div>
+  ${!auth?`<div class="card"><h3>Autorizar ejecución</h3><p>Para iniciar campo registra orden y SIAF. Luego el sistema generará los ítems individuales según cantidades de cotización.</p><div class="grid"><label class="fieldHint"><b>Tipo de orden</b><small>Orden que autoriza el servicio.</small><select id="s212_tipo"><option>Orden de servicio</option><option>Orden de compra</option></select></label><label class="fieldHint"><b>N° orden</b><small>Número de OC/OS.</small><input id="s212_orden" placeholder="N° orden"></label><label class="fieldHint"><b>N° SIAF</b><small>Expediente SIAF.</small><input id="s212_siaf" placeholder="N° SIAF"></label><label class="fieldHint"><b>Fecha</b><small>Fecha de autorización.</small><input id="s212_fecha" type="date" value="${new Date().toISOString().slice(0,10)}"></label></div><div class="bar"><button class="btn green" onclick="s212_authorize('${q.id}')">Autorizar e iniciar ejecución</button></div></div>`:
+  `<div class="grid"><div class="card"><b>Total equipos</b><h2>${resumen.total}</h2></div><div class="card"><b>Registros técnicos</b><h2>${resumen.rows.length}</h2></div><div class="card"><b>Terminados</b><h2>${resumen.done}</h2></div><div class="card"><b>Avance</b><h2>${resumen.pct}%</h2></div></div>
+  <div class="card"><h3>Filtros de ejecución</h3><div class="grid"><label class="fieldHint"><b>Tipo de equipo</b><small>Filtra por categoría.</small><select id="s212_filter_tipo" onchange="s212_setFilter('${q.id}','tipo',this.value)"><option>Todos</option>${tipos.map(t=>`<option ${q.execFilter?.tipo===t?'selected':''}>${s212_e(t)}</option>`).join('')}</select></label><label class="fieldHint"><b>Estado</b><small>Filtra por avance.</small><select id="s212_filter_estado" onchange="s212_setFilter('${q.id}','estado',this.value)">${['Todos','Pendiente','En proceso','Terminado','Conforme','Observado'].map(e=>`<option ${q.execFilter?.estado===e?'selected':''}>${e}</option>`).join('')}</select></label><label class="fieldHint"><b>Buscar</b><small>Serie, patrimonial, ubicación, actividad.</small><input id="s212_search" value="${s212_e(q.execFilter?.buscar||'')}" onchange="s212_setFilter('${q.id}','buscar',this.value)" placeholder="Buscar..."></label></div><div class="bar"><button class="btn" onclick="s212_resetExec('${q.id}')">Regenerar ítems</button></div></div>
+  <div class="tableWrap"><table><thead><tr><th>Item</th><th>Equipo</th><th>Datos técnicos</th><th>Actividad</th><th>Estado</th><th>Observación</th><th>Evidencia</th></tr></thead><tbody>${filtered.map((r,i)=>{
+    const realIndex=(q.execRows||[]).indexOf(r);
+    return `<tr><td><b>${s212_pad(r.item,r.totalItems)} / ${r.totalItems}</b></td><td><b>${s212_e(r.tipoEquipo)}</b><br><small>Marca base: ${s212_e(r.marca||'-')}<br>Modelo base: ${s212_e(r.modelo||'-')}</small></td><td><input placeholder="Marca real" value="${s212_e(r.marca||'')}" onchange="s212_updateRow('${q.id}',${realIndex},'marca',this.value)"><input placeholder="Modelo real" value="${s212_e(r.modelo||'')}" onchange="s212_updateRow('${q.id}',${realIndex},'modelo',this.value)"><input placeholder="Serie" value="${s212_e(r.serie||'')}" onchange="s212_updateRow('${q.id}',${realIndex},'serie',this.value)"><input placeholder="Patrimonial" value="${s212_e(r.patrimonial||r.codigoPatrimonial||'')}" onchange="s212_updateRow('${q.id}',${realIndex},'patrimonial',this.value);s212_updateRow('${q.id}',${realIndex},'codigoPatrimonial',this.value)"><input placeholder="Ubicación" value="${s212_e(r.ubicacion||'')}" onchange="s212_updateRow('${q.id}',${realIndex},'ubicacion',this.value)"></td><td>${s212_e(r.actividad)}</td><td><select onchange="s212_updateRow('${q.id}',${realIndex},'estado',this.value)">${['Pendiente','En proceso','Terminado','Conforme','Observado'].map(e=>`<option ${r.estado===e?'selected':''}>${e}</option>`).join('')}</select></td><td><textarea placeholder="Observación técnica" onchange="s212_updateRow('${q.id}',${realIndex},'observacion',this.value)">${s212_e(r.observacion||'')}</textarea></td><td><input type="file" accept="image/*" onchange="s212_fileRow('${q.id}',${realIndex},this.files[0])"><small>${s212_e(r.evidenciaNombre||'')}</small></td></tr>`;
+  }).join('')||'<tr><td colspan="7">Sin ítems para mostrar.</td></tr>'}</tbody></table></div>`}
+  </section>`;
+};
+
+render=function(){
+  if(typeof ensureActiveEmpresa==='function')ensureActiveEmpresa();
+  if(typeof s21_allEmpresas==='function')s21_allEmpresas();
+  app.innerHTML=`<header class="top"><div><h1>${VERSION_ADMIN_ESTABLE_212}</h1><b>Modelo Administrador + ejecución técnica recuperada</b></div><div class="tag">${cloud}</div></header><nav class="nav">${['Dashboard','Empresas','Clientes','Cotizaciones','Ejecución','Actas','Informes','Inventario','Configuración'].map(x=>`<button class="${tab===x?'active':''}" onclick="tab='${x}';draft=null;render()">${x}</button>`).join('')}</nav><main>${(views[tab]||views.Dashboard)()}</main>`;
+  bind(); if(typeof initSignaturePads==='function')initSignaturePads();
+};
+render();

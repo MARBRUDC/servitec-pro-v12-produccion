@@ -1,20 +1,25 @@
-# SERVITEC PRO V13.21.1 ADMINISTRADOR ESTABLE
+# SERVITEC PRO V13.21.2 EJECUCIÓN RECUPERADA
 
-Corrección puntual sobre V13.21.0:
+Corrección puntual sobre V13.21.1:
 
-- Cliente guarda y recupera correctamente:
-  - Dirección
-  - Teléfono
-  - Correo
-  - Responsable
-- Se agregan alias de compatibilidad para datos antiguos.
-- Se fuerza persistencia en nube cuando existe saveCloud().
-- Mantiene Empresas, Clientes jerárquicos, Cotizaciones y PDF profesional.
+- El módulo Ejecución vuelve a abrir.
+- Vista de ejecución independiente de funciones antiguas duplicadas.
+- Autoriza ejecución con Orden y SIAF.
+- Genera ítems técnicos individuales desde Tipo/Equipo + Cantidad de la cotización.
+- En ejecución recién se llenan:
+  - Marca real
+  - Modelo real
+  - Serie
+  - Patrimonial
+  - Ubicación
+  - Estado
+  - Observación
+  - Evidencia
+- No muestra costos en ejecución.
 
 Prueba:
-1. Seleccionar cliente.
-2. Llenar dirección, teléfono, correo y responsable.
-3. Guardar.
-4. Presionar F5.
-5. Volver a seleccionar cliente.
-6. Los campos deben aparecer completos.
+1. Ir a Ejecución.
+2. Seleccionar cotización.
+3. Registrar Orden y SIAF.
+4. Autorizar.
+5. Confirmar que se generan ítems.

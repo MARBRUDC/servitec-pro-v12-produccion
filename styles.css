@@ -43,3 +43,7 @@ button:disabled{opacity:.45;cursor:not-allowed}
 .tableWrap th{background:#0f7f73;color:#fff}
 .selectedRow{background:#fff7e8!important;outline:2px solid #f3b34d}
 button:disabled{opacity:.45;cursor:not-allowed}
+
+/* V13.21.2 Ejecución recuperada */
+.tableWrap input,.tableWrap textarea,.tableWrap select{width:100%;margin:3px 0}
+.tableWrap textarea{min-height:70px}
