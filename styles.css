@@ -119,3 +119,25 @@ button:disabled{opacity:.45;cursor:not-allowed}
   .uxMobile .photoGrid{grid-template-columns:1fr}
   .uxMobile .mobileGrid label b{font-size:14px}
 }
+
+/* V13.23.0 Acta de Retiro */
+.retiroBox{border-left:7px solid #0f766e;background:#f0fdfa}
+.retiroBox h3{margin-top:0;color:#0f766e}
+.retiroBox small{display:block;color:#475569;margin-top:8px}
+
+/* V13.23.1 Recojo Simple */
+.recojoCard details{display:none}
+.quickButtons{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.recojoGrid{grid-template-columns:1fr!important}
+.obsRecojo{display:block;margin-top:8px}
+.onePhoto{grid-template-columns:1fr!important}
+.nextBtn{width:100%;margin-top:10px;font-size:18px;padding:14px!important}
+.recojoCard .execCardHead{border-bottom:1px solid #e5edf7}
+.recojoCard .mobileGrid input{font-size:17px;min-height:48px}
+.recojoCard textarea{min-height:80px}
+.saveStatus{max-width:100%;word-break:break-word}
+@media(max-width:760px){
+  .quickButtons{grid-template-columns:1fr}
+  .recojoCard .execCardHead h3{font-size:28px}
+  .recojoCard .statusSelect{min-height:48px}
+}

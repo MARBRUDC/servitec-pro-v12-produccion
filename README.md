@@ -1,15 +1,21 @@
-# SERVITEC PRO V13.22.1 MOBILE UX
+# SERVITEC PRO V13.23.1 RECOJO SIMPLE
 
-Corrección visual del módulo Ejecución para trabajo en celular.
+Versión enfocada en campo para servicios de calibración.
 
 Incluye:
-- Filtros colapsables.
-- El bloque de filtros ya no tapa la ficha del equipo.
-- Resumen más compacto.
-- Tarjetas de ejecución más compactas.
+- Vista simplificada de recojo.
+- Oculta Actividades / Recojo traslado / Calibración taller durante el registro inicial.
+- Fecha de retiro por defecto = hoy.
+- Validación de serie duplicada dentro de la ejecución.
+- Validación de código patrimonial duplicado dentro de la ejecución.
+- Botones:
+  - Escanear serie
+  - Escanear patrimonial
+  - Registrar y siguiente
 - Mantiene autosave.
-- Mantiene fotos Antes / Durante / Después.
-- No toca Empresas, Clientes, Cotizaciones ni PDF.
+- Mantiene Acta de Retiro PDF y Excel/CSV.
+- No mezcla equipos del cliente con Inventario.
+- No modifica Empresas, Clientes, Cotizaciones ni PDF comercial.
 
 Archivos incluidos:
 - build.js

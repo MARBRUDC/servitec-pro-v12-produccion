@@ -2364,3 +2364,396 @@ render=function(){
   bind(); if(typeof initSignaturePads==='function')initSignaturePads();
 };
 render();
+
+
+/* ============================================================
+   SERVITEC PRO V13.23.0 - ACTA DE RETIRO DE EQUIPOS
+   Exclusivo para CALIBRACIÓN.
+   - Botones PDF y Excel/CSV en Ejecución.
+   - Relación de equipos registrados/retirados.
+   - No modifica Empresas, Clientes, Cotizaciones ni PDF comercial.
+   - Si no es calibración, el flujo normal sigue sin mostrar acta de retiro.
+============================================================ */
+const VERSION_ACTA_RETIRO='SERVITEC PRO V13.23.0 ACTA DE RETIRO';
+
+function s230_norm(v){return String(v||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')}
+function s230_isCalibracion(q){
+  const blob=[
+    q.tipoServicio,q.tipo,q.config,q.configuracion,q.modo,q.titulo,q.descripcion,
+    ...(q.acts||[]).map(a=>a.descripcion||a.nombre||''),
+    ...(q.actividades||[]).map(a=>a.descripcion||a.nombre||''),
+    ...(q.equipos||[]).map(e=>e.nombre||e.tipo||'')
+  ].join(' ');
+  return s230_norm(blob).includes('calibracion') || s230_norm(blob).includes('calibraci');
+}
+function s230_clienteObj(q){return (state.clientes||[]).find(c=>c.id===(q.clienteId||q.cliente_id))||{}}
+function s230_estObj(q){const c=s230_clienteObj(q);return (c.establecimientos||[]).find(e=>e.id===(q.establecimientoId||q.establecimiento_id))||{}}
+function s230_areaObj(q){const e=s230_estObj(q);return (e.areas||[]).find(a=>a.id===(q.areaId||q.area_id))||{}}
+function s230_emp(){return typeof s220_activeEmpresa==='function'?s220_activeEmpresa():((state.empresas||[]).find(e=>e.id===state.activeEmpresaId)||{})}
+function s230_rows(q){if(typeof s220_normalizeExec==='function') return s220_normalizeExec(q);return q.execEquipos||q.execRows||[]}
+function s230_registeredRows(q){
+  const rows=s230_rows(q);
+  return rows.filter(r=>(r.estado && r.estado!=='Pendiente') || r.serie || r.patrimonial || r.codigoPatrimonial || r.ubicacion);
+}
+function s230_summaryByType(rows){const map={};rows.forEach(r=>{map[r.tipoEquipo||'Equipo']=(map[r.tipoEquipo||'Equipo']||0)+1});return map}
+function s230_htmlEscape(v){return String(v||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;')}
+function s230_actaRetiroHTML(q){
+  const emp=s230_emp(), cli=s230_clienteObj(q), est=s230_estObj(q), area=s230_areaObj(q);
+  const rows=s230_registeredRows(q);
+  const summary=s230_summaryByType(rows);
+  const today=new Date().toLocaleDateString('es-PE');
+  const logo=emp.logo?`<img src="${emp.logo}" style="max-height:70px;max-width:170px;object-fit:contain">`:'';
+  const firma=emp.firma?`<img src="${emp.firma}" style="max-height:70px;max-width:170px;object-fit:contain">`:'';
+  const code=(typeof s220_code==='function'?s220_code(q):(q.numero||q.codigo||q.id||''));
+  const tableRows=rows.map((r,i)=>`<tr>
+    <td>${i+1}</td><td>${s230_htmlEscape(r.tipoEquipo)}</td><td>${s230_htmlEscape(r.marca)}</td><td>${s230_htmlEscape(r.modelo)}</td>
+    <td>${s230_htmlEscape(r.serie)}</td><td>${s230_htmlEscape(r.patrimonial||r.codigoPatrimonial)}</td><td>${s230_htmlEscape(r.ubicacion)}</td>
+    <td>${s230_htmlEscape(r.estado)}</td><td>${s230_htmlEscape(r.observacionRecojo||r.observacionTecnica||'')}</td>
+  </tr>`).join('');
+  const summaryHtml=Object.keys(summary).map(k=>`<li><b>${s230_htmlEscape(k)}:</b> ${summary[k]}</li>`).join('');
+  return `<!doctype html><html><head><meta charset="utf-8"><title>Acta de retiro - ${s230_htmlEscape(code)}</title>
+  <style>
+    @page{size:A4;margin:14mm}
+    body{font-family:Arial,Helvetica,sans-serif;color:#111;font-size:11px}
+    h1{font-size:18px;text-align:center;margin:8px 0 10px;text-transform:uppercase}
+    h2{font-size:13px;margin:14px 0 6px;color:#003366}
+    .head{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #003366;padding-bottom:8px}
+    .emp{font-size:11px;line-height:1.35;text-align:right}
+    .meta{display:grid;grid-template-columns:1fr 1fr;gap:4px 20px;margin:10px 0;border:1px solid #cbd5e1;padding:8px;border-radius:6px}
+    .meta div{line-height:1.35}
+    table{width:100%;border-collapse:collapse;margin-top:8px}
+    th,td{border:1px solid #999;padding:4px;vertical-align:top}
+    th{background:#e8f1ff;font-weight:bold;text-align:center}
+    .obs{border:1px solid #cbd5e1;padding:8px;margin-top:10px;border-radius:6px;line-height:1.4}
+    .summary{display:flex;gap:20px}
+    .summary ul{margin:4px 0 0 16px;padding:0}
+    .firms{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;margin-top:45px;text-align:center}
+    .line{border-top:1px solid #111;padding-top:6px;min-height:70px}
+    .small{font-size:10px;color:#444}
+    .noPrint{margin:12px 0}
+    @media print{.noPrint{display:none}}
+  </style></head><body>
+  <div class="noPrint"><button onclick="window.print()" style="padding:10px 18px;font-weight:bold">Imprimir / Guardar PDF</button></div>
+  <div class="head"><div>${logo}</div><div class="emp"><b>${s230_htmlEscape(emp.nombre||'')}</b><br>RUC: ${s230_htmlEscape(emp.ruc||'')}<br>${s230_htmlEscape(emp.direccion||'')}<br>${s230_htmlEscape(emp.telefono||'')} ${s230_htmlEscape(emp.correo||'')}</div></div>
+  <h1>Acta de retiro de equipos para calibración</h1>
+  <div class="meta">
+    <div><b>Cliente:</b> ${s230_htmlEscape(cli.nombre||q.clienteNombre||'-')}</div><div><b>Fecha de retiro:</b> ${today}</div>
+    <div><b>Establecimiento:</b> ${s230_htmlEscape(est.nombre||q.establecimientoNombre||'-')}</div><div><b>Cotización:</b> ${s230_htmlEscape(code)}</div>
+    <div><b>Área usuaria:</b> ${s230_htmlEscape(area.nombre||q.areaNombre||'-')}</div><div><b>Orden / SIAF:</b> ${s230_htmlEscape(q.ordenNumero||'-')} / ${s230_htmlEscape(q.siaf||'-')}</div>
+  </div>
+  <h2>Resumen de equipos retirados</h2>
+  <div class="summary"><div><b>Total equipos registrados/retiro:</b> ${rows.length}</div><div><ul>${summaryHtml}</ul></div></div>
+  <h2>Relación de equipos retirados</h2>
+  <table><thead><tr><th>N°</th><th>Tipo de equipo</th><th>Marca</th><th>Modelo</th><th>Serie</th><th>Cód. patrimonial</th><th>Ubicación</th><th>Estado</th><th>Observación</th></tr></thead><tbody>${tableRows||'<tr><td colspan="9">Sin equipos registrados.</td></tr>'}</tbody></table>
+  <div class="obs"><b>Constancia:</b> Los equipos detallados en la presente relación son retirados temporalmente para la ejecución del servicio de calibración y certificación, comprometiéndose el contratista a su devolución una vez culminado el servicio, salvo observaciones técnicas comunicadas formalmente.</div>
+  <div class="firms">
+    <div class="line"><b>Responsable área usuaria</b><br>Nombre: ___________________<br>DNI: ___________________<br>Cargo: ___________________</div>
+    <div class="line"><b>Técnico responsable</b><br>Nombre: ___________________<br>DNI: ___________________<br>Cargo: ___________________</div>
+    <div class="line">${firma}<br><b>Empresa contratista</b><br>${s230_htmlEscape(emp.gerente||'')}<br><span class="small">${s230_htmlEscape(emp.cargoGerente||'')}</span></div>
+  </div>
+  </body></html>`;
+}
+function s230_exportActaPDF(qid){
+  const q=(state.cotizaciones||[]).find(x=>x.id===qid); if(!q)return alert('No se encontró la ejecución.');
+  if(!s230_isCalibracion(q))return alert('El Acta de Retiro solo aplica para servicios de calibración.');
+  const w=window.open('','_blank'); w.document.write(s230_actaRetiroHTML(q)); w.document.close();
+}
+function s230_csvCell(v){return '"'+String(v||'').replaceAll('"','""')+'"'}
+function s230_exportExcel(qid){
+  const q=(state.cotizaciones||[]).find(x=>x.id===qid); if(!q)return alert('No se encontró la ejecución.');
+  if(!s230_isCalibracion(q))return alert('La exportación de retiro solo aplica para servicios de calibración.');
+  const rows=s230_registeredRows(q);
+  const header=['Item','Tipo de equipo','Marca','Modelo','Serie','Código patrimonial','Ubicación','Estado','Observación de recojo'];
+  const csv=[header.map(s230_csvCell).join(',')].concat(rows.map((r,i)=>[
+    i+1,r.tipoEquipo,r.marca,r.modelo,r.serie,r.patrimonial||r.codigoPatrimonial,r.ubicacion,r.estado,r.observacionRecojo||r.observacionTecnica||''
+  ].map(s230_csvCell).join(','))).join('\n');
+  const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'});
+  const a=document.createElement('a');
+  const code=typeof s220_code==='function'?s220_code(q):(q.numero||q.codigo||q.id||'cotizacion');
+  a.href=URL.createObjectURL(blob); a.download='relacion_retiro_'+code+'.csv';
+  document.body.appendChild(a); a.click(); a.remove();
+}
+function s230_retiroButtons(q,resumen){
+  if(!s230_isCalibracion(q))return '';
+  const disabled=resumen.registrados===0?'disabled':'';
+  return `<div class="card retiroBox">
+    <h3>Constancia de retiro de equipos</h3>
+    <p>Genera la relación de equipos registrados para firma del área usuaria antes de trasladarlos a taller.</p>
+    <div class="bar">
+      <button class="btn green" ${disabled} onclick="s230_exportActaPDF('${q.id}')">Exportar Acta de Retiro PDF</button>
+      <button class="btn" ${disabled} onclick="s230_exportExcel('${q.id}')">Exportar Excel</button>
+    </div>
+    ${resumen.registrados<resumen.total?`<small>Nota: aún faltan registrar ${resumen.total-resumen.registrados} equipos. Puedes exportar parcial si el retiro es por tandas.</small>`:''}
+  </div>`;
+}
+
+/* Sobrescribe solo vista Ejecución para insertar Acta de Retiro */
+views['Ejecución']=function(){
+  const qs=s220_cots();
+  if(!qs.length)return `<section class="wrap">${back()}<h2>Ejecución</h2><p class="notice">No hay cotizaciones para la empresa activa.</p></section>`;
+  let qid=s220_selQid();
+  let q=qs.find(x=>x.id===qid)||qs[0];
+  s220_setQid(q.id);
+  const auth=!!(q.ordenNumero&&q.siaf);
+  if(!auth){
+    return `<section class="wrap">${back()}<h2>Ejecución técnica</h2>
+    <p class="notice"><b>Empresa activa:</b> ${s220_e(s220_activeEmpresa().nombre||'-')}. Aquí inicia el flujo técnico sin costos.</p>
+    <div class="card">
+      <label class="fieldHint"><b>Cotización seleccionada</b><small>Selecciona la cotización que pasará a ejecución.</small>
+        <select onchange="s220_setQid(this.value);render()">${qs.map(x=>`<option value="${x.id}" ${x.id===q.id?'selected':''}>${s220_e(s220_code(x))} - ${s220_e(s220_cliente(x))}</option>`).join('')}</select>
+      </label>
+    </div>
+    <div class="card"><h3>Autorizar ejecución</h3>
+      <p>Registra orden y SIAF para generar los equipos individuales. Serie, patrimonial y ubicación se llenan recién en campo.</p>
+      <div class="grid">
+        <label class="fieldHint"><b>Tipo de orden</b><small>Documento que autoriza el servicio.</small><select id="s220_tipo"><option>Orden de servicio</option><option>Orden de compra</option></select></label>
+        <label class="fieldHint"><b>N° orden</b><small>Número de OC/OS.</small><input id="s220_orden" placeholder="N° orden"></label>
+        <label class="fieldHint"><b>N° SIAF</b><small>Expediente SIAF.</small><input id="s220_siaf" placeholder="N° SIAF"></label>
+        <label class="fieldHint"><b>Fecha</b><small>Fecha de autorización.</small><input id="s220_fecha" type="date" value="${new Date().toISOString().slice(0,10)}"></label>
+      </div>
+      <div class="bar"><button class="btn green" onclick="s220_authorize('${q.id}')">Autorizar e iniciar ejecución</button></div>
+    </div></section>`;
+  }
+  const resumen=s220_resumen(q);
+  const rows=resumen.rows;
+  const tipos=Object.keys(resumen.tipos);
+  const filtered=s220_filter(q,rows);
+  return `<section class="wrap execMobile uxMobile">${back()}<h2>Ejecución técnica</h2>
+    <p class="notice compactNotice"><b>Cotización:</b> ${s220_e(s220_code(q))} | <b>Cliente:</b> ${s220_e(s220_cliente(q))} | <b>OS/OC:</b> ${s220_e(q.ordenNumero)} | <b>SIAF:</b> ${s220_e(q.siaf)}</p>
+    <div class="saveStatus">${s220_e(q.execSaveStatus||'✓ Listo para registrar')}</div>
+    <div class="summaryGrid compactSummary">
+      <div><b>Total</b><strong>${resumen.total}</strong></div>
+      <div><b>Registrados</b><strong>${resumen.registrados}</strong></div>
+      <div><b>Pendientes</b><strong>${resumen.pendientes}</strong></div>
+      <div><b>Taller</b><strong>${resumen.taller}</strong></div>
+      <div><b>Finalizados</b><strong>${resumen.finalizados}</strong></div>
+      <div><b>Observados</b><strong>${resumen.observados}</strong></div>
+    </div>
+    <div class="typeSummary compactTypes">${tipos.map(t=>`<span>${s220_e(t)}: <b>${resumen.tipos[t].registrados}/${resumen.tipos[t].total}</b></span>`).join('')}</div>
+    ${s230_retiroButtons(q,resumen)}
+    ${s221_filterBox(q,resumen,tipos)}
+    <div class="execList compactExecList">${filtered.map(r=>s220_card(q,r,rows.indexOf(r))).join('')||'<p class="notice">Sin equipos para mostrar con el filtro actual.</p>'}</div>
+  </section>`;
+};
+
+render=function(){
+  if(typeof ensureActiveEmpresa==='function')ensureActiveEmpresa();
+  if(typeof s21_allEmpresas==='function')s21_allEmpresas();
+  app.innerHTML=`<header class="top"><div><h1>${VERSION_ACTA_RETIRO}</h1><b>Acta de retiro para calibración + ejecución mobile first</b></div><div class="tag">${cloud}</div></header><nav class="nav">${['Dashboard','Empresas','Clientes','Cotizaciones','Ejecución','Actas','Informes','Inventario','Configuración'].map(x=>`<button class="${tab===x?'active':''}" onclick="tab='${x}';draft=null;render()">${x}</button>`).join('')}</nav><main>${(views[tab]||views.Dashboard)()}</main>`;
+  bind(); if(typeof initSignaturePads==='function')initSignaturePads();
+};
+render();
+
+
+/* ============================================================
+   SERVITEC PRO V13.23.1 - RECOJO SIMPLE + VALIDACIÓN
+   Exclusivo para calibración.
+   Objetivo campo:
+   - No mezclar con inventario.
+   - Vista simple para recojo.
+   - Fecha retiro = hoy por defecto.
+   - Validación de serie duplicada.
+   - Validación de código patrimonial duplicado.
+   - Botón Registrar y siguiente.
+   - Mantiene Acta de Retiro PDF/Excel.
+============================================================ */
+const VERSION_RECOJO_SIMPLE='SERVITEC PRO V13.23.1 RECOJO SIMPLE';
+
+function s231_today(){
+  const d=new Date();
+  const m=String(d.getMonth()+1).padStart(2,'0');
+  const day=String(d.getDate()).padStart(2,'0');
+  return `${d.getFullYear()}-${m}-${day}`;
+}
+function s231_getQ(qid){return (state.cotizaciones||[]).find(x=>x.id===qid)}
+function s231_rows(q){return typeof s220_normalizeExec==='function'?s220_normalizeExec(q):(q.execEquipos||[])}
+function s231_normCode(v){return String(v||'').trim().toUpperCase()}
+function s231_findDup(q,idx,field,value){
+  value=s231_normCode(value);
+  if(!value)return null;
+  const rows=s231_rows(q);
+  for(let i=0;i<rows.length;i++){
+    if(i===idx)continue;
+    const r=rows[i]||{};
+    const current=field==='serie'
+      ? s231_normCode(r.serie)
+      : s231_normCode(r.patrimonial||r.codigoPatrimonial);
+    if(current && current===value)return {index:i,row:r};
+  }
+  return null;
+}
+function s231_markError(q,idx,msg){
+  q.execError=msg;
+  try{persist&&persist()}catch(e){}
+  render();
+}
+function s231_update(qid,idx,field,val){
+  const q=s231_getQ(qid); if(!q)return;
+  const rows=s231_rows(q); if(!rows[idx])return;
+  if(field==='serie'){
+    const dup=s231_findDup(q,idx,'serie',val);
+    if(dup){
+      rows[idx].serie='';
+      return s231_markError(q,idx,`⚠ Serie duplicada: ya fue registrada en equipo ${dup.row.item||dup.index+1}/${dup.row.totalItems||rows.length} (${dup.row.tipoEquipo||'Equipo'}).`);
+    }
+  }
+  if(field==='patrimonial' || field==='codigoPatrimonial'){
+    const dup=s231_findDup(q,idx,'patrimonial',val);
+    if(dup){
+      rows[idx].patrimonial='';
+      rows[idx].codigoPatrimonial='';
+      return s231_markError(q,idx,`⚠ Código patrimonial duplicado: ya fue registrado en equipo ${dup.row.item||dup.index+1}/${dup.row.totalItems||rows.length} (${dup.row.tipoEquipo||'Equipo'}).`);
+    }
+  }
+  rows[idx][field]=val;
+  if(field==='patrimonial')rows[idx].codigoPatrimonial=val;
+  if(field==='codigoPatrimonial')rows[idx].patrimonial=val;
+  if(!rows[idx].fechaRetiro)rows[idx].fechaRetiro=s231_today();
+  if(['marca','modelo','serie','patrimonial','codigoPatrimonial','ubicacion','fechaRetiro','observacionRecojo'].includes(field) && rows[idx].estado==='Pendiente'){
+    rows[idx].estado='Registrado';
+  }
+  rows[idx].updatedAt=new Date().toISOString();
+  q.estado='En ejecución';
+  q.execError='';
+  q.execSaveStatus='✓ Guardado';
+  try{persist&&persist()}catch(e){}
+  try{saveCloud&&saveCloud()}catch(e){}
+}
+function s231_registerNext(qid,idx){
+  const q=s231_getQ(qid); if(!q)return;
+  const rows=s231_rows(q); const r=rows[idx]; if(!r)return;
+  if(!r.fechaRetiro)r.fechaRetiro=s231_today();
+  if(!r.serie && !r.patrimonial && !r.codigoPatrimonial){
+    q.execError='⚠ Registra al menos serie o código patrimonial antes de pasar al siguiente equipo.';
+    try{persist&&persist()}catch(e){}
+    return render();
+  }
+  const dupS=s231_findDup(q,idx,'serie',r.serie);
+  if(dupS){q.execError=`⚠ Serie duplicada: ya existe en equipo ${dupS.row.item||dupS.index+1}.`; try{persist&&persist()}catch(e){}; return render();}
+  const dupP=s231_findDup(q,idx,'patrimonial',r.patrimonial||r.codigoPatrimonial);
+  if(dupP){q.execError=`⚠ Patrimonial duplicado: ya existe en equipo ${dupP.row.item||dupP.index+1}.`; try{persist&&persist()}catch(e){}; return render();}
+  r.estado = r.estado==='Pendiente' ? 'Registrado' : r.estado;
+  r.updatedAt=new Date().toISOString();
+  q.execError='';
+  q.execSaveStatus=`✓ Equipo ${r.item||idx+1} registrado`;
+  q.execFilter=q.execFilter||{};
+  q.execFocusIndex=Math.min(idx+1, rows.length-1);
+  try{persist&&persist()}catch(e){}
+  try{saveCloud&&saveCloud()}catch(e){}
+  render();
+  setTimeout(()=>{
+    const el=document.getElementById('eq_'+(idx+1));
+    if(el)el.scrollIntoView({behavior:'smooth',block:'start'});
+  },250);
+}
+function s231_scanPrompt(qid,idx,field){
+  const label=field==='serie'?'serie':'código patrimonial';
+  const val=prompt(`Escanea o pega el ${label}. Si tu lector QR/código de barras escribe texto, colócalo aquí.`);
+  if(val!==null && val.trim()!=='')s231_update(qid,idx,field,val.trim());
+}
+function s231_fileSimple(qid,idx,file){
+  if(typeof s220_file==='function')return s220_file(qid,idx,'evidenciaAntes',file);
+}
+function s231_card(q,r,idx){
+  if(!r.fechaRetiro)r.fechaRetiro=s231_today();
+  const cls=typeof s220_statusClass==='function'?s220_statusClass(r.estado):'';
+  return `<div class="execCard recojoCard ${cls}" id="eq_${idx}">
+    <div class="execCardHead">
+      <div><b>Equipo ${s220_pad?s220_pad(r.item,r.totalItems):r.item} / ${r.totalItems||''}</b><h3>${s220_e(r.tipoEquipo||'Equipo')}</h3></div>
+      <select class="statusSelect" onchange="s231_update('${q.id}',${idx},'estado',this.value)">
+        ${['Pendiente','Registrado','Retirado','En taller','Finalizado','Observado'].map(s=>`<option ${r.estado===s?'selected':''}>${s}</option>`).join('')}
+      </select>
+    </div>
+    <div class="quickButtons">
+      <button class="btn" onclick="s231_scanPrompt('${q.id}',${idx},'serie')">📷 Escanear serie</button>
+      <button class="btn" onclick="s231_scanPrompt('${q.id}',${idx},'patrimonial')">🏷 Escanear patrimonial</button>
+    </div>
+    <div class="mobileGrid recojoGrid">
+      <label><b>Marca</b><input value="${s220_e(r.marca||'')}" placeholder="Marca" oninput="s231_update('${q.id}',${idx},'marca',this.value)"></label>
+      <label><b>Modelo</b><input value="${s220_e(r.modelo||'')}" placeholder="Modelo" oninput="s231_update('${q.id}',${idx},'modelo',this.value)"></label>
+      <label><b>Serie</b><input value="${s220_e(r.serie||'')}" placeholder="Serie única" oninput="s231_update('${q.id}',${idx},'serie',this.value)"></label>
+      <label><b>Patrimonial</b><input value="${s220_e(r.patrimonial||r.codigoPatrimonial||'')}" placeholder="Código patrimonial único" oninput="s231_update('${q.id}',${idx},'patrimonial',this.value)"></label>
+      <label><b>Ubicación</b><input value="${s220_e(r.ubicacion||'')}" placeholder="Área / ubicación" oninput="s231_update('${q.id}',${idx},'ubicacion',this.value)"></label>
+      <label><b>Fecha retiro</b><input type="date" value="${s220_e(r.fechaRetiro||s231_today())}" onchange="s231_update('${q.id}',${idx},'fechaRetiro',this.value)"></label>
+    </div>
+    <label class="obsRecojo"><b>Observación de recojo</b><textarea placeholder="Estado inicial, accesorios, condición del equipo..." oninput="s231_update('${q.id}',${idx},'observacionRecojo',this.value)">${s220_e(r.observacionRecojo||'')}</textarea></label>
+    <div class="photoGrid onePhoto">
+      <label class="photoBtn">📷 Foto del equipo<input type="file" accept="image/*" capture="environment" onchange="s231_fileSimple('${q.id}',${idx},this.files[0])"><small>${s220_e(r.evidenciaAntesNombre||'')}</small></label>
+    </div>
+    <button class="btn green nextBtn" onclick="s231_registerNext('${q.id}',${idx})">✅ Registrar y siguiente</button>
+  </div>`;
+}
+function s231_filter(q,rows){
+  if(typeof s220_filter==='function')return s220_filter(q,rows);
+  return rows;
+}
+
+/* Reemplazo seguro de vista Ejecución: recojo simple para calibración, normal para lo demás */
+views['Ejecución']=function(){
+  const qs=s220_cots();
+  if(!qs.length)return `<section class="wrap">${back()}<h2>Ejecución</h2><p class="notice">No hay cotizaciones para la empresa activa.</p></section>`;
+  let qid=s220_selQid();
+  let q=qs.find(x=>x.id===qid)||qs[0];
+  s220_setQid(q.id);
+  const auth=!!(q.ordenNumero&&q.siaf);
+  if(!auth){
+    return `<section class="wrap">${back()}<h2>Ejecución técnica</h2>
+    <p class="notice"><b>Empresa activa:</b> ${s220_e(s220_activeEmpresa().nombre||'-')}. Aquí inicia el flujo técnico sin costos.</p>
+    <div class="card">
+      <label class="fieldHint"><b>Cotización seleccionada</b><small>Selecciona la cotización que pasará a ejecución.</small>
+        <select onchange="s220_setQid(this.value);render()">${qs.map(x=>`<option value="${x.id}" ${x.id===q.id?'selected':''}>${s220_e(s220_code(x))} - ${s220_e(s220_cliente(x))}</option>`).join('')}</select>
+      </label>
+    </div>
+    <div class="card"><h3>Autorizar ejecución</h3>
+      <p>Registra orden y SIAF para generar los equipos individuales. Serie, patrimonial y ubicación se llenan recién en campo.</p>
+      <div class="grid">
+        <label class="fieldHint"><b>Tipo de orden</b><small>Documento que autoriza el servicio.</small><select id="s220_tipo"><option>Orden de servicio</option><option>Orden de compra</option></select></label>
+        <label class="fieldHint"><b>N° orden</b><small>Número de OC/OS.</small><input id="s220_orden" placeholder="N° orden"></label>
+        <label class="fieldHint"><b>N° SIAF</b><small>Expediente SIAF.</small><input id="s220_siaf" placeholder="N° SIAF"></label>
+        <label class="fieldHint"><b>Fecha</b><small>Fecha de autorización.</small><input id="s220_fecha" type="date" value="${s231_today()}"></label>
+      </div>
+      <div class="bar"><button class="btn green" onclick="s220_authorize('${q.id}')">Autorizar e iniciar ejecución</button></div>
+    </div></section>`;
+  }
+  const resumen=s220_resumen(q);
+  const rows=resumen.rows;
+  rows.forEach(r=>{if(!r.fechaRetiro)r.fechaRetiro=s231_today()});
+  const tipos=Object.keys(resumen.tipos);
+  const filtered=s231_filter(q,rows);
+  const isCal=typeof s230_isCalibracion==='function'?s230_isCalibracion(q):true;
+  if(!isCal && typeof s220_card==='function'){
+    return `<section class="wrap execMobile uxMobile">${back()}<h2>Ejecución técnica</h2>
+      <p class="notice compactNotice"><b>Cotización:</b> ${s220_e(s220_code(q))} | <b>Cliente:</b> ${s220_e(s220_cliente(q))} | <b>OS/OC:</b> ${s220_e(q.ordenNumero)} | <b>SIAF:</b> ${s220_e(q.siaf)}</p>
+      <div class="saveStatus">${s220_e(q.execSaveStatus||'✓ Listo para registrar')}</div>
+      <div class="summaryGrid compactSummary">
+        <div><b>Total</b><strong>${resumen.total}</strong></div><div><b>Registrados</b><strong>${resumen.registrados}</strong></div><div><b>Pendientes</b><strong>${resumen.pendientes}</strong></div><div><b>Taller</b><strong>${resumen.taller}</strong></div><div><b>Finalizados</b><strong>${resumen.finalizados}</strong></div><div><b>Observados</b><strong>${resumen.observados}</strong></div>
+      </div>
+      ${s221_filterBox?s221_filterBox(q,resumen,tipos):''}
+      <div class="execList compactExecList">${filtered.map(r=>s220_card(q,r,rows.indexOf(r))).join('')||'<p class="notice">Sin equipos para mostrar.</p>'}</div>
+    </section>`;
+  }
+  return `<section class="wrap execMobile uxMobile">${back()}<h2>Recojo de equipos para calibración</h2>
+    <p class="notice compactNotice"><b>Cotización:</b> ${s220_e(s220_code(q))} | <b>Cliente:</b> ${s220_e(s220_cliente(q))} | <b>OS/OC:</b> ${s220_e(q.ordenNumero)} | <b>SIAF:</b> ${s220_e(q.siaf)}</p>
+    <div class="saveStatus">${s220_e(q.execError||q.execSaveStatus||'✓ Listo para registrar')}</div>
+    <div class="summaryGrid compactSummary">
+      <div><b>Total</b><strong>${resumen.total}</strong></div>
+      <div><b>Registrados</b><strong>${resumen.registrados}</strong></div>
+      <div><b>Pendientes</b><strong>${resumen.pendientes}</strong></div>
+      <div><b>Taller</b><strong>${resumen.taller}</strong></div>
+      <div><b>Finalizados</b><strong>${resumen.finalizados}</strong></div>
+      <div><b>Observados</b><strong>${resumen.observados}</strong></div>
+    </div>
+    <div class="typeSummary compactTypes">${tipos.map(t=>`<span>${s220_e(t)}: <b>${resumen.tipos[t].registrados}/${resumen.tipos[t].total}</b></span>`).join('')}</div>
+    ${typeof s230_retiroButtons==='function'?s230_retiroButtons(q,resumen):''}
+    ${typeof s221_filterBox==='function'?s221_filterBox(q,resumen,tipos):''}
+    <div class="execList compactExecList">${filtered.map(r=>s231_card(q,r,rows.indexOf(r))).join('')||'<p class="notice">Sin equipos para mostrar.</p>'}</div>
+  </section>`;
+};
+
+render=function(){
+  if(typeof ensureActiveEmpresa==='function')ensureActiveEmpresa();
+  if(typeof s21_allEmpresas==='function')s21_allEmpresas();
+  app.innerHTML=`<header class="top"><div><h1>${VERSION_RECOJO_SIMPLE}</h1><b>Recojo simple + validación de serie/patrimonial + acta de retiro</b></div><div class="tag">${cloud}</div></header><nav class="nav">${['Dashboard','Empresas','Clientes','Cotizaciones','Ejecución','Actas','Informes','Inventario','Configuración'].map(x=>`<button class="${tab===x?'active':''}" onclick="tab='${x}';draft=null;render()">${x}</button>`).join('')}</nav><main>${(views[tab]||views.Dashboard)()}</main>`;
+  bind(); if(typeof initSignaturePads==='function')initSignaturePads();
+};
+render();
