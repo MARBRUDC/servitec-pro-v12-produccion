@@ -1,0 +1,18 @@
+SERVITEC PRO V13.27.0 - CHECKLIST QA
+
+[OK] node --check src/main.js
+[OK] npm run build
+[OK] dist generado
+[OK] vercel.json estático: outputDirectory dist
+[OK] No existe main.js ni server.js en raíz
+[OK] Correlativo configurado como siguiente a emitir
+[OK] PDF usa empresa de la cotización
+[OK] Exportar/Importar respaldo JSON agregado
+
+Prueba funcional obligatoria en navegador:
+[ ] Configurar empresa activa
+[ ] Configuración: poner cotización = 206
+[ ] Nueva cotización debe generar COT-2026-0206
+[ ] Editar cotización debe conservar COT-2026-0206
+[ ] PDF debe abrir en una ventana y permitir guardar en PDF
+[ ] El PDF debe mostrar logo como marca de agua si la empresa tiene logo

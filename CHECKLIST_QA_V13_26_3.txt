@@ -1,0 +1,14 @@
+QA TECNICO
+[ ] GitHub sin duplicados (sin archivos con (1), (2), etc.)
+[ ] npm run build OK
+[ ] Vercel deploy OK
+[ ] App abre sin 500
+[ ] Logs Vercel sin window is not defined
+
+QA FUNCIONAL MAESTRO
+[ ] Crear cliente demo
+[ ] Crear cotización con 1 equipo + 1 actividad + 1 repuesto
+[ ] Editar cotización sin duplicar correlativo
+[ ] Ejecutar cotización con OS/OC y SIAF
+[ ] Acta muestra actividad y repuesto
+[ ] Informe genera estructura independiente

@@ -1,0 +1,5 @@
+SERVITEC PRO V13.26.4 - QA
+- Arquitectura estática Vercel: OK
+- main.js/server.js fuera de raíz: OK
+- PDF cotización botón superior usa printQuote/doc con manejo de popups: OK
+- Build: pendiente de ejecución
