@@ -141,3 +141,63 @@ button:disabled{opacity:.45;cursor:not-allowed}
   .recojoCard .execCardHead h3{font-size:28px}
   .recojoCard .statusSelect{min-height:48px}
 }
+
+/* V13.24.0 Usuarios, roles y escáner */
+.loginShell{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#e8f6ff,#f8fbff);padding:20px}
+.loginCard{width:min(430px,100%);background:#fff;border:1px solid #cfe1f5;border-radius:22px;padding:24px;box-shadow:0 18px 50px rgba(0,0,0,.08)}
+.loginCard h1{margin:0;color:#0f766e}
+.loginCard h2{margin:8px 0;color:#00224d}
+.loginCard label{display:block;font-weight:800;color:#00224d;margin-top:12px}
+.loginCard input{width:100%;min-height:46px;font-size:16px;border-radius:14px;margin-top:6px}
+.loginBtn{width:100%;margin-top:16px;font-size:18px}
+.loginMsg{color:#b91c1c;font-weight:800;margin-top:10px}
+.scanModal{position:fixed;inset:0;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;z-index:9999;padding:18px}
+.scanBox{background:#fff;border-radius:20px;padding:16px;width:min(520px,100%);text-align:center}
+.scanBox h3{margin-top:0;color:#00224d}
+.scanBox video{width:100%;max-height:60vh;background:#000;border-radius:16px}
+.scanBox p{font-weight:800;color:#0f766e}
+@media(max-width:760px){
+  .scanBox{padding:12px;border-radius:16px}
+  .scanBox video{max-height:52vh}
+}
+
+/* V13.24.1 Ejecución ordenada + actas filtradas */
+.execSelector{border-left:7px solid #2563eb;background:#f8fbff}
+.execSelector h3{margin-top:0;color:#00224d}
+.actionBar{gap:8px;flex-wrap:wrap}
+.miniTable{max-height:260px;overflow:auto;margin-top:10px}
+.miniTable table{font-size:13px}
+.rowActive{background:#dbeafe!important}
+.selectedExecInfo{border-left:7px solid #0f766e;background:#f0fdfa;font-size:14px}
+@media(max-width:760px){.actionBar .btn{width:100%;margin:3px 0}.miniTable{max-height:220px}.miniTable th,.miniTable td{font-size:12px;padding:6px}}
+
+/* V13.24.2 Venta biomédica */
+.tableWrap textarea[data-ve]{min-width:260px;min-height:74px}
+@media(max-width:760px){
+  .tableWrap textarea[data-ve]{min-width:220px}
+}
+
+/* V13.24.3 Entrega de venta */
+.entregaBox{border-left:7px solid #0f766e;background:#f8fffd}
+.entregaBox h3{color:#0f766e}
+.entregaBox .tableWrap{margin-top:10px}
+
+/* V13.24.4 Fix entrega */
+.entregaBox .btn.green{font-weight:900}
+
+/* V13.24.5 Fix duplicados sin salto */
+.s245Toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:99999;max-width:92%;padding:14px 18px;border-radius:16px;font-weight:900;box-shadow:0 14px 40px rgba(0,0,0,.25);display:none}
+.s245Toast.error{background:#fee2e2;color:#991b1b;border:1px solid #fca5a5}
+.s245Toast.ok{background:#dcfce7;color:#166534;border:1px solid #86efac}
+.s245InlineError{background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;border-radius:12px;padding:10px 12px;margin:8px 0;font-weight:900}
+
+/* V13.25.0 Documentos por estado */
+.execSelector .miniTable td:last-child{color:#0f766e}
+.card h3{color:#00224d}
+
+/* V13.26.3 - ejecución por actividad */
+.actDetail{display:block;padding:12px;margin:10px 0;border:1px solid #cfe8ff;border-radius:14px;background:#f8fbff}
+.actHeader{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-bottom:10px}
+.actDetail textarea{width:100%;min-height:58px;margin:6px 0}
+.activityEvidence{margin-top:8px}
+.notice.small{font-size:.9rem;margin:6px 0 10px}

@@ -1,0 +1,18 @@
+CHECKLIST QA V13.27.1
+
+[OK] src/main.js contiene V13.27.1.
+[OK] dist/main.js se regenera desde src/main.js.
+[OK] index.html usa cache-buster v=13.27.1.
+[OK] build genera dist/.
+[OK] vercel.json apunta a outputDirectory dist.
+[OK] No se usa window fuera de frontend estático.
+[OK] Correlativo 206 => COT-2026-0206.
+[OK] Migración desde servitec_pro_state_v1317 / servitec_v139.
+[OK] Exportar/importar respaldo JSON.
+
+Prueba funcional obligatoria tras subir:
+1. Importar respaldo JSON.
+2. Activar MB CLANEL.
+3. Verificar COT-2026-0206 o COT existente migrada.
+4. Generar PDF.
+5. Verificar logo/marca de agua/firma/totales.

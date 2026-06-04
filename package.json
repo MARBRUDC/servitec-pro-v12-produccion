@@ -1,6 +1,6 @@
 {
-  "name": "servitec-pro-v13-27-0-estable",
-  "version": "13.27.0",
+  "name": "servitec-pro-v13-27-1-estable-funcional",
+  "version": "13.27.1",
   "private": true,
   "scripts": {
     "build": "node build.cjs",

@@ -16,4 +16,4 @@ fs.writeFileSync(path.join(dist, 'index.html'), html);
   const from = path.join(src, file);
   if (fs.existsSync(from)) fs.copyFileSync(from, path.join(dist, file));
 });
-console.log('SERVITEC PRO V13.27.0 static build OK');
+console.log('SERVITEC PRO V13.27.1 static build OK');

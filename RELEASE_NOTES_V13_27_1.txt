@@ -1,0 +1,11 @@
+SERVITEC PRO V13.27.1
+
+Corrección de paquete mezclado: la versión anterior decía V13.27 en README pero ejecutaba código V13.26.4.
+Esta versión sincroniza código fuente, dist, cache-buster, README y archivos raíz de compatibilidad.
+
+Bloqueantes corregidos:
+- Encabezado interno V13.27.1.
+- `src/main.js` y `dist/main.js` sin rastros operativos V13.26.4.
+- Correlativo configurado como siguiente número.
+- PDF de cotización con empresa correcta.
+- Respaldo JSON desde UI.

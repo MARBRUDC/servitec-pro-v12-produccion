@@ -1,28 +1,25 @@
-# SERVITEC PRO V13.27.0 ESTABLE
+# SERVITEC PRO V13.27.1 ESTABLE FUNCIONAL
 
-Base estable para Vercel con arquitectura estática `src/ → dist/`.
+Base estable para Vercel con arquitectura estática `src/ -> dist/`.
 
 ## Correcciones incluidas
 
-- Migración automática desde `servitec_v139` y `servitec_pro_state_v1317` hacia `servitec_pro_state_v1327`.
-- Persistencia triple temporal para evitar pérdida de empresas, clientes y cotizaciones.
-- Correlativos por empresa como **siguiente número a emitir**: si colocas 206, sale `COT-2026-0206`.
-- Edición de cotización conserva ID y correlativo.
-- PDF de cotización profesional, compacto, con logo/firma y marca de agua.
-- PDF toma la empresa de la cotización/empresa activa, no la primera empresa del arreglo.
-- Botones Exportar/Importar respaldo JSON en Configuración.
-- Vercel configurado como sitio estático: `npm run build` y salida `dist`.
+- Versión interna, README, `src/main.js`, `dist/main.js`, `index.html` y `dist/index.html` sincronizados en V13.27.1.
+- Migración automática desde `servitec_pro_state_v1317` y `servitec_v139`.
+- Escritura sincronizada en `servitec_pro_state_v1327`, `servitec_pro_state_v1317` y `servitec_v139`.
+- Correlativos por empresa como **siguiente número a emitir**: si colocas 206, genera `COT-2026-0206`.
+- PDF de cotización profesional con empresa activa/de la cotización, logo, firma, marca de agua, condiciones comerciales, banco, cuenta y CCI.
+- Exportar e importar respaldo JSON desde Configuración.
+- Estructura preparada para ejecución por actividad.
 
-## Despliegue Vercel
+## Importante al subir a GitHub
 
-Framework/Application preset: Other
-Build Command: npm run build
-Output Directory: dist
-Install Command: npm install
+Si el repositorio ya tenía archivos antiguos en raíz (`main.js`, `server.js`, `index.html`, `styles.css`, `build.js`), esta versión los incluye actualizados para evitar que Vercel sirva código viejo. Aun así, lo ideal es limpiar el repositorio y dejar solo esta versión.
 
-## Antes de subir una nueva versión
+## Configuración Vercel
 
-1. Exportar respaldo JSON desde Configuración.
-2. Verificar empresa activa.
-3. Verificar correlativo siguiente.
-4. Crear cotización de prueba y PDF.
+- Framework: Other
+- Root Directory: `./`
+- Build Command: `npm run build`
+- Output Directory: `dist`
+- Install Command: `npm install`
