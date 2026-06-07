@@ -1,0 +1,7 @@
+[ ] Header V13.29.2
+[ ] Login OK
+[ ] Cotizaciones OK
+[ ] Botón Ejecutar abre Ejecución
+[ ] Firmas área usuaria/técnico visibles
+[ ] Guardar ejecución OK
+[ ] Acta/Informe imprimen firmas

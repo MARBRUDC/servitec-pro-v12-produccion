@@ -1,0 +1,1 @@
+V13.29.2: Corrige ReferenceError initSignaturePads/firmaCard y habilita ingreso al módulo Ejecución con firmas.

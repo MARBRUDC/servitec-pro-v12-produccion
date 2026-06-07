@@ -1,7 +1,5 @@
-# SERVITEC PRO V13.29.1 PRODUCCIÓN
+# SERVITEC PRO V13.29.2 ESTABLE - EJECUCIÓN CORREGIDA
 
-Exportación por documento seleccionado: Cotización, Ejecución, Acta e Informe.
+Corrección crítica: funciones de firmas manuscritas (`firmaCard`, `initSignaturePads`, `signatureSection`) restauradas para que el módulo Ejecución no se rompa.
 
-- PDF existente no modificado.
-- Word/Excel generan el documento seleccionado, no listas generales.
-- Mantiene login seguro, permisos, firmas y ejecución por tipo de servicio.
+Se mantiene exportación Word/Excel por documento seleccionado y PDF existente.

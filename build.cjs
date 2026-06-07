@@ -12,4 +12,4 @@ for (const file of ['index.html', 'main.js', 'styles.css', 'supabase-schema.sql'
   if (fs.existsSync(src)) fs.copyFileSync(src, out);
 }
 
-console.log('Build OK: dist generado para SERVITEC PRO V13.29.1');
+console.log('Build OK: dist generado para SERVITEC PRO V13.29.2');
