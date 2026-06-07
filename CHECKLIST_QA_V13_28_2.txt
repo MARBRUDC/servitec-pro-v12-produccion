@@ -1,0 +1,7 @@
+SERVITEC PRO V13.28.2 - QA
+[ ] Header V13.28.2
+[ ] Cotización muestra Tipo de servicio separado de Configuración
+[ ] Permite escribir campos completos sin saltar cursor
+[ ] Correlativo 206 -> COT-2026-0206
+[ ] PDF imprime tipo de servicio y configuración
+[ ] Ejecución por actividad conserva evidencias/comentarios/recomendaciones

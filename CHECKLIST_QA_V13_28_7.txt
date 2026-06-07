@@ -1,0 +1,7 @@
+QA V13.28.7
+[ ] Crear cotización preventivo y ejecutar actividades.
+[ ] Crear cotización correctivo y verificar campos falla/diagnóstico/causa/pruebas.
+[ ] Crear cotización calibración y verificar patrón/certificado/resultado.
+[ ] Subir evidencia Antes/Durante/Después por actividad.
+[ ] Generar acta y verificar actividad + evidencia no se mezclan.
+[ ] Generar informe y verificar sustento por actividad.

@@ -1,0 +1,5 @@
+V13.28.3 Usuarios y permisos reales.
+- Agregado módulo Usuarios con roles y permisos por módulo.
+- Agregada auditoría básica.
+- Navegación filtrada según permisos.
+- Mantiene fixes de V13.28.2: tipo de servicio, formularios, PDF, correlativos y ejecución por actividad.

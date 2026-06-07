@@ -1,0 +1,8 @@
+[ ] Header V13.29.1
+[ ] Login sin credenciales visibles
+[ ] Cotización: PDF/Word/Excel del registro seleccionado
+[ ] Ejecución: Word/Excel de la ejecución seleccionada
+[ ] Acta: PDF/Word/Excel del acta seleccionada
+[ ] Informe: PDF/Word/Excel del informe seleccionado
+[ ] Correlativo real
+[ ] Build Vercel OK

@@ -1,0 +1,8 @@
+SERVITEC PRO V13.28.1 - QA FORMULARIOS
+[OK] src/main.js sin errores de sintaxis.
+[OK] npm run build genera dist/.
+[OK] Version interna/index/README sincronizados.
+[OK] Se elimina listener con once:true.
+[OK] Los campos de actividades/repuestos/equipos ya no re-renderizan al escribir.
+[OK] Los datos se guardan al cambiar/salir del campo.
+[OK] Totales se actualizan sin romper foco.

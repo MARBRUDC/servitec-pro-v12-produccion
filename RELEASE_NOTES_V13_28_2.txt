@@ -1,0 +1,4 @@
+V13.28.2
+- Restaurado Tipo de servicio en cotizaciones.
+- Campo Tipo de servicio separado de Configuración.
+- PDF actualizado para mostrar ambos campos.

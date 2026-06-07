@@ -1,0 +1,5 @@
+SERVITEC PRO V13.28.1
+- Corrige bug critico de formularios: al escribir en equipos/actividades/repuestos se perdia foco y solo se guardaba el primer caracter.
+- Reemplaza listener temporal once:true por delegacion persistente.
+- Evita renderizar toda la pantalla en cada tecla.
+- Mantiene arquitectura limpia src -> dist.

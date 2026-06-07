@@ -1,0 +1,9 @@
+V13.28.4 QA
+[ ] Abrir app
+[ ] Crear cotización
+[ ] Ejecutar cotización
+[ ] Capturar firma área usuaria
+[ ] Capturar firma técnico
+[ ] Guardar ejecución
+[ ] Generar acta con ambas firmas
+[ ] Generar informe con firma técnico

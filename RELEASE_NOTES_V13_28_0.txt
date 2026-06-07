@@ -1,0 +1,2 @@
+V13.28.0 Base limpia estable.
+Se reemplaza la base mezclada anterior por una SPA reconstruida, con persistencia única, migración de claves anteriores, correlativos correctos y documentos diferenciados.

@@ -1,0 +1,10 @@
+SERVITEC PRO V13.28.3 - CHECKLIST QA
+[ ] Header V13.28.3 visible.
+[ ] Usuarios permite crear/editar/eliminar.
+[ ] Roles disponibles: ADMIN, GERENTE, OPERADOR, TECNICO, LECTURA.
+[ ] Permisos por módulo se guardan.
+[ ] Usuario TECNICO no ve Configuración ni Usuarios.
+[ ] Correlativo 206 genera COT-2026-0206.
+[ ] PDF de cotización abre.
+[ ] Formularios no pierden foco.
+[ ] Exportar/importar respaldo JSON funciona.

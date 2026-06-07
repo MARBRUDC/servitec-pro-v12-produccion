@@ -1,0 +1,11 @@
+SERVITEC PRO V13.28.0 - CHECKLIST QA
+[OK] node --check src/main.js
+[OK] npm run build
+[OK] dist generado
+[OK] vercel.json outputDirectory dist
+[OK] no depende de serverless
+[OK] versión sincronizada en README/src/dist/index
+[OK] correlativo 206 => COT-2026-0206
+[OK] exportar/importar respaldo JSON
+[OK] ejecución por actividad
+[OK] acta e informe independientes

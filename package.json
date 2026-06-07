@@ -1,0 +1,8 @@
+{
+  "scripts": {
+    "build": "node build.cjs",
+    "start": "node local-server.cjs"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

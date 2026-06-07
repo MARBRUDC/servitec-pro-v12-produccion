@@ -1,0 +1,3 @@
+SERVITEC PRO V13.28.4
+- Agrega firmas manuscritas para responsable de área usuaria y técnico en ejecución.
+- Acta imprime firmas reales capturadas en pantalla.
