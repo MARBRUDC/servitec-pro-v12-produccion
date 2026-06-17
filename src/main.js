@@ -81,7 +81,11 @@ async function saveCloud(){
   }catch(e){console.warn('Supabase save',e);cloudStatus='Modo local: no se pudo guardar en nube'}
 }
 async function forceSyncCloud(){let ok=await loadCloud();render();alert(ok?'Datos sincronizados con Supabase.':'No se pudo sincronizar. Revisa variables Vercel y tabla app_state.')}
-function normalize(s=state){s.empresas=s.empresas?.length?s.empresas:clone(seed.empresas);s.clientes=s.clientes||[];s.cotizaciones=s.cotizaciones||[];s.ejecuciones=s.ejecuciones||[];s.inventario=s.inventario||[];s.usuarios=s.usuarios?.length?s.usuarios:clone(seed.usuarios);s.auditoria=s.auditoria||[];if(!s.currentUserId||!s.usuarios.some(u=>u.id===s.currentUserId))s.currentUserId=s.usuarios[0]?.id;for(const u of s.usuarios){
+function normalize(s=state){s.empresas=s.empresas?.length?s.empresas:clone(seed.empresas);s.clientes=s.clientes||[];
+s.cotizaciones=s.cotizaciones||[];
+s.ordenes=s.ordenes||[];
+s.ejecuciones=s.ejecuciones||[];
+s.inventario=s.inventario||[];;s.usuarios=s.usuarios?.length?s.usuarios:clone(seed.usuarios);s.auditoria=s.auditoria||[];if(!s.currentUserId||!s.usuarios.some(u=>u.id===s.currentUserId))s.currentUserId=s.usuarios[0]?.id;for(const u of s.usuarios){
   u.estado=u.estado||'ACTIVO';
   u.rol=u.rol||'LECTURA';
   u.empresaId=u.empresaId||s.activeEmpresaId;
