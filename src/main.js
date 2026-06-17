@@ -152,6 +152,66 @@ Usuarios(){return viewUsuarios()}
 
 function viewOrdenes(){
 
+  const ordenes = state.ordenes || [];
+
+  return `
+  <section class="wrap">
+
+    ${back()}
+
+    <h2>Órdenes</h2>
+
+    <p class="notice">
+      Gestión de Órdenes de Servicio y Compra
+    </p>
+
+    <div class="bar">
+      <button class="btn green" onclick="nuevaOrden()">
+        + Nueva Orden
+      </button>
+    </div>
+
+    <div class="card">
+
+      <table style="width:100%">
+        <thead>
+          <tr>
+            <th>N° Orden</th>
+            <th>SIAF</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+
+        <tbody>
+
+        ${
+          ordenes.length===0
+          ? `
+            <tr>
+              <td colspan="3">
+                No existen órdenes registradas
+              </td>
+            </tr>
+          `
+          :
+          ordenes.map(o=>`
+            <tr>
+              <td>${o.numeroOrden||''}</td>
+              <td>${o.siaf||''}</td>
+              <td>${o.estado||''}</td>
+            </tr>
+          `).join('')
+        }
+
+        </tbody>
+      </table>
+
+    </div>
+
+  </section>
+  `;
+}
+
   return `
   <section class="wrap">
 
@@ -381,3 +441,33 @@ function bind(){
   document.addEventListener('blur',ev=>{if(draft&&(ev.target.dataset.type||ev.target.dataset.eqid||ev.target.dataset.eqact)){save()}},true);
 }
 window.addEventListener('beforeunload',()=>save(false));bind();render();loadCloud().then(()=>render());
+function nuevaOrden(){
+
+  if(!state.ordenes){
+    state.ordenes=[];
+  }
+
+  const numeroOrden = prompt('Número de Orden');
+
+  if(!numeroOrden){
+    return;
+  }
+
+  const siaf = prompt('Número SIAF') || '';
+
+  state.ordenes.push({
+
+    id: Date.now().toString(),
+
+    numeroOrden,
+
+    siaf,
+
+    estado:'Registrada'
+
+  });
+
+  save();
+
+  render();
+}
