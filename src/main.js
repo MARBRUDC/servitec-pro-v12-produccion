@@ -208,11 +208,7 @@ function viewOrdenes(){
 
     </div>
 
-  </section>
-  `;
-}
-
-  return `
+  </section>`;}
   <section class="wrap">
 
     ${back()}
