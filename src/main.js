@@ -39,7 +39,11 @@ function can(m,a='ver'){let u=currentUser(); if((u.rol||'').toUpperCase()==='ADM
 function moduleList(){return MODULES.filter(m=>can(m,'ver'))}
 function logAudit(accion,modulo,doc=''){state.auditoria=state.auditoria||[];state.auditoria.unshift({id:uid(),fecha:new Date().toISOString(),usuario:currentUser().nombre||currentUser().usuario||'Sistema',accion,modulo,documento:doc});state.auditoria=state.auditoria.slice(0,300)}
 
-const seed={activeEmpresaId:'emp1',currentUserId:'u_admin',auditoria:[],usuarios:[{id:'u_admin',nombre:'Administrador',usuario:'admin',correo:'admin@servitec.local',clave:'admin123',rol:'ADMIN',estado:'ACTIVO',empresaId:'emp1',permisos:rolePerms('ADMIN')}],empresas:[{id:'emp1',nombre:'Nueva empresa',ruc:'',telefono:'',correo:'',direccion:'',representante:'',cargoRepresentante:'',logo:'',firma:'',moneda:'Soles (S/)',formaPago:'Crédito comercial',tiempoEjecucion:'10 días calendarios',lugarServicio:'En establecimiento del cliente',validez:'15 días calendario',garantia:'06 meses',observacionesCot:'Incluye mano de obra especializada.\nIncluye pruebas de funcionamiento.',contactoComercial:'',telefonoContacto:'',banco:'',cuenta:'',cci:'',prefijos:{cotizacion:'COT',acta:'ACT',informe:'INF',os:'OS'},correlativos:{cotizacion:1,acta:1,informe:1,os:1}}],clientes:[],cotizaciones:[],ejecuciones:[],inventario:[]};
+const seed={activeEmpresaId:'emp1',currentUserId:'u_admin',auditoria:[],usuarios:[{id:'u_admin',nombre:'Administrador',usuario:'admin',correo:'admin@servitec.local',clave:'admin123',rol:'ADMIN',estado:'ACTIVO',empresaId:'emp1',permisos:rolePerms('ADMIN')}],empresas:[{id:'emp1',nombre:'Nueva empresa',ruc:'',telefono:'',correo:'',direccion:'',representante:'',cargoRepresentante:'',logo:'',firma:'',moneda:'Soles (S/)',formaPago:'Crédito comercial',tiempoEjecucion:'10 días calendarios',lugarServicio:'En establecimiento del cliente',validez:'15 días calendario',garantia:'06 meses',observacionesCot:'Incluye mano de obra especializada.\nIncluye pruebas de funcionamiento.',contactoComercial:'',telefonoContacto:'',banco:'',cuenta:'',cci:'',prefijos:{cotizacion:'COT',acta:'ACT',informe:'INF',os:'OS'},correlativos:{cotizacion:1,acta:1,informe:1,os:1}}],clientes:[],
+cotizaciones:[],
+ordenes:[],
+ejecuciones:[],
+inventario:[]};
 let state=load(), tab='Dashboard', draft=null, msg='';
 function clone(o){return JSON.parse(JSON.stringify(o||{}))}
 function read(k){try{return JSON.parse(localStorage.getItem(k)||'null')}catch{return null}}
