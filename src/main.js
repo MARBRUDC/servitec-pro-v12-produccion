@@ -20,19 +20,7 @@ function configOptionsFor(tipo){
   return [MODES.GENERAL, MODES.PROPIAS, MODES.MIXTO, MODES.SOLO_EQUIPOS, MODES.SOLO_REPUESTOS];
 }
 function ensureValidConfig(q){let opts=configOptionsFor(q.tipo||SERVICE_TYPES[0]); if(!opts.includes(q.config)) q.config=opts[0]; return q.config}
-const MODULES=[
-'Dashboard',
-'Empresas',
-'Clientes',
-'Cotizaciones',
-'Órdenes',
-'Ejecución',
-'Actas',
-'Informes',
-'Inventario',
-'Configuración',
-'Usuarios'
-];
+const MODULES=['Dashboard','Empresas','Clientes','Cotizaciones','Órdenes','Ejecución','Actas','Informes','Inventario','Configuración','Usuarios'];
 const ACTIONS=['ver','crear','editar','eliminar','pdf'];
 const ROLES=['ADMIN','GERENTE','OPERADOR','TECNICO','LECTURA'];
 const ROLE_PERMS={
@@ -137,7 +125,64 @@ function calcSub(q){let a=(q.acts||[]).reduce((s,x)=>s+num(x.cantidad)*num(x.pre
 function render(){normalize();if(!isLogged()){renderLogin();return}state.currentUserId=sessionUserId();let u=currentUser();if(u.empresaId && u.rol!=='ADMIN' && state.empresas.some(e=>e.id===u.empresaId))state.activeEmpresaId=u.empresaId;if(!can(tab,'ver'))tab=moduleList()[0]||'Dashboard';document.title=VERSION;app.innerHTML=`<header class="top"><div><h1>${VERSION}</h1><small>Login seguro + permisos reales + documentos dinámicos + exportación por documento seleccionado</small><br><small>Usuario: <b>${esc(u.nombre||u.usuario)}</b> · Rol: <b>${esc(u.rol)}</b></small></div><div class="bar topActions"><button class="btn" onclick="logout()">Salir</button></div></header><nav class="nav">${moduleList().map(x=>`<button class="${tab===x?'active':''}" onclick="tab='${x}';draft=null;render()">${x}</button>`).join('')}</nav><main>${views[tab]()}</main>`;bind();initSignaturePads()}
 const back=()=>`<button class="btn primary" onclick="tab='Dashboard';draft=null;render()">← Atrás</button>`;
 function table(h,rows){return `<div class="tableWrap"><table><thead><tr>${h.map(x=>`<th>${x}</th>`).join('')}</tr></thead><tbody>${rows.length?rows.map(r=>`<tr>${r.map(c=>`<td>${c??''}</td>`).join('')}</tr>`).join(''):`<tr><td colspan="${h.length}">Sin registros.</td></tr>`}</tbody></table></div>`}
-const views={Dashboard(){return `<section class="wrap"><h2>Dashboard</h2><div class="grid"><div class="card"><b>Empresa activa</b><h3>${esc(activeEmpresa().nombre)}</h3></div><div class="card"><b>Clientes</b><h2>${state.clientes.filter(c=>(c.empresaId||activeEmpresa().id)===activeEmpresa().id).length}</h2></div><div class="card"><b>Cotizaciones</b><h2>${empCot().length}</h2></div><div class="card"><b>Inventario</b><h2>${state.inventario.filter(i=>(i.empresaId||activeEmpresa().id)===activeEmpresa().id).length}</h2></div></div><p class="notice">Base limpia: módulos por permisos, empresa activa, correlativos reales y almacenamiento único ${STORE}.</p>${msg?`<p class="notice">${esc(msg)}</p>`:''}</section>`},Empresas(){return viewEmpresas()},Clientes(){return viewClientes()},Cotizaciones(){return draft?quoteForm():quoteList()},Ejecución(){return viewExec()},Actas(){return viewDocs('ACTA DE CONFORMIDAD')},Informes(){return viewDocs('INFORME TÉCNICO')},Inventario(){return viewInv()},Configuración(){return viewConfig()},Usuarios(){return viewUsuarios()}};
+const views={
+Dashboard(){return `<section class="wrap"><h2>Dashboard</h2><div class="grid"><div class="card"><b>Empresa activa</b><h3>${esc(activeEmpresa().nombre)}</h3></div><div class="card"><b>Clientes</b><h2>${state.clientes.filter(c=>(c.empresaId||activeEmpresa().id)===activeEmpresa().id).length}</h2></div><div class="card"><b>Cotizaciones</b><h2>${empCot().length}</h2></div><div class="card"><b>Inventario</b><h2>${state.inventario.filter(i=>(i.empresaId||activeEmpresa().id)===activeEmpresa().id).length}</h2></div></div><p class="notice">Base limpia: módulos por permisos, empresa activa, correlativos reales y almacenamiento único ${STORE}.</p>${msg?`<p class="notice">${esc(msg)}</p>`:''}</section>`},
+Empresas(){return viewEmpresas()},
+Clientes(){return viewClientes()},
+Cotizaciones(){return draft?quoteForm():quoteList()},
+Órdenes(){return viewOrdenes()},
+Ejecución(){return viewExec()},
+Actas(){return viewDocs('ACTA DE CONFORMIDAD')},
+Informes(){return viewDocs('INFORME TÉCNICO')},
+Inventario(){return viewInv()},
+Configuración(){return viewConfig()},
+Usuarios(){return viewUsuarios()}
+};
+/* ==========================================================
+   MODULO ORDENES V13.30
+========================================================== */
+
+function viewOrdenes(){
+
+  return `
+  <section class="wrap">
+
+    ${back()}
+
+    <h2>Órdenes</h2>
+
+    <p class="notice">
+      Gestión de Órdenes de Servicio y Compra
+    </p>
+
+    <div class="bar">
+      <button class="btn green">
+        + Nueva Orden
+      </button>
+    </div>
+
+    <div class="card">
+
+      <h3>Módulo Órdenes V13.30</h3>
+
+      <p>
+        Aquí se administrarán:
+      </p>
+
+      <ul>
+        <li>Órdenes de Servicio</li>
+        <li>Órdenes de Compra</li>
+        <li>SIAF</li>
+        <li>Expedientes</li>
+        <li>Plazos</li>
+        <li>Alertas de vencimiento</li>
+      </ul>
+
+    </div>
+
+  </section>
+  `;
+}
 function viewEmpresas(){let e=activeEmpresa();return `<section class="wrap">${back()}<h2>Empresas</h2><p class="notice"><b>Empresa activa:</b> ${esc(e.nombre)}</p><select id="empSel">${state.empresas.map(x=>`<option value="${x.id}" ${x.id===e.id?'selected':''}>${esc(x.nombre)}</option>`)}</select><div class="bar"><button class="btn" onclick="newEmpresa()">Nueva</button><button class="btn green" onclick="saveEmpresa()">Guardar cambios</button><button class="btn" onclick="state.activeEmpresaId=$('#empSel').value;save();render()">Activar empresa</button><button class="btn danger" onclick="delEmpresa()">Eliminar</button></div><div class="grid"><label class="field"><b>Razón social</b><input id="e_nombre" value="${esc(e.nombre)}"></label><label><b>RUC</b><input id="e_ruc" value="${esc(e.ruc)}"></label><label><b>Teléfono</b><input id="e_telefono" value="${esc(e.telefono)}"></label><label><b>Correo</b><input id="e_correo" value="${esc(e.correo)}"></label><label><b>Dirección</b><input id="e_direccion" value="${esc(e.direccion)}"></label><label><b>Representante</b><input id="e_representante" value="${esc(e.representante)}"></label><label><b>Cargo firmante</b><input id="e_cargo" value="${esc(e.cargoRepresentante)}"></label><label><b>Moneda</b><input id="e_moneda" value="${esc(e.moneda)}"></label></div><div class="grid2"><label><b>Logo empresa</b><input type="file" id="e_logo" accept="image/*"><small>${e.logo?'Logo cargado ✅':'Sin logo'}</small></label><label><b>Firma</b><input type="file" id="e_firma" accept="image/*"><small>${e.firma?'Firma cargada ✅':'Sin firma'}</small></label></div><h3>Condiciones comerciales y banco</h3><div class="grid"><input id="e_pago" placeholder="Forma de pago" value="${esc(e.formaPago)}"><input id="e_tiempo" placeholder="Tiempo de ejecución" value="${esc(e.tiempoEjecucion)}"><input id="e_lugar" placeholder="Lugar del servicio" value="${esc(e.lugarServicio)}"><input id="e_validez" placeholder="Validez" value="${esc(e.validez)}"><input id="e_garantia" placeholder="Garantía" value="${esc(e.garantia)}"><input id="e_contacto" placeholder="Contacto comercial" value="${esc(e.contactoComercial)}"><input id="e_telcontacto" placeholder="Teléfono contacto" value="${esc(e.telefonoContacto)}"><input id="e_banco" placeholder="Banco" value="${esc(e.banco)}"><input id="e_cuenta" placeholder="Cuenta" value="${esc(e.cuenta)}"><input id="e_cci" placeholder="CCI" value="${esc(e.cci)}"></div><textarea id="e_obs" placeholder="Observaciones comerciales">${esc(e.observacionesCot)}</textarea><h3>Correlativos por empresa</h3><p class="notice">Estos campos son el <b>próximo número a emitir</b>. Si colocas 206, la siguiente cotización será COT-${year()}-0206.</p>${table(['Documento','Prefijo','Próximo número','Vista previa'],[['cotizacion','Cotización'],['acta','Acta'],['informe','Informe'],['os','Orden servicio']].map(([k,l])=>[l,`<input id="pref_${k}" value="${esc(e.prefijos[k])}">`,`<input type="number" id="corr_${k}" value="${Number(e.correlativos[k]||1)}">`,`<b>${fmt(e.prefijos[k],e.correlativos[k])}</b>`]))}</section>`}
 async function file64(id){let f=$(id)?.files?.[0]; if(!f)return null; return await new Promise(res=>{let r=new FileReader();r.onload=()=>res(r.result);r.readAsDataURL(f)})}
 async function saveEmpresa(){let e=activeEmpresa();Object.assign(e,{nombre:$('#e_nombre').value,ruc:$('#e_ruc').value,telefono:$('#e_telefono').value,correo:$('#e_correo').value,direccion:$('#e_direccion').value,representante:$('#e_representante').value,cargoRepresentante:$('#e_cargo').value,moneda:$('#e_moneda').value,formaPago:$('#e_pago').value,tiempoEjecucion:$('#e_tiempo').value,lugarServicio:$('#e_lugar').value,validez:$('#e_validez').value,garantia:$('#e_garantia').value,contactoComercial:$('#e_contacto').value,telefonoContacto:$('#e_telcontacto').value,banco:$('#e_banco').value,cuenta:$('#e_cuenta').value,cci:$('#e_cci').value,observacionesCot:$('#e_obs').value});for(const k of ['cotizacion','acta','informe','os']){e.prefijos[k]=$('#pref_'+k).value||k.toUpperCase();e.correlativos[k]=Number($('#corr_'+k).value)||1}let logo=await file64('#e_logo'),firma=await file64('#e_firma'); if(logo)e.logo=logo;if(firma)e.firma=firma;save();msg='Empresa guardada.';render()}
