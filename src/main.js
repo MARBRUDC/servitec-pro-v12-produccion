@@ -20,7 +20,19 @@ function configOptionsFor(tipo){
   return [MODES.GENERAL, MODES.PROPIAS, MODES.MIXTO, MODES.SOLO_EQUIPOS, MODES.SOLO_REPUESTOS];
 }
 function ensureValidConfig(q){let opts=configOptionsFor(q.tipo||SERVICE_TYPES[0]); if(!opts.includes(q.config)) q.config=opts[0]; return q.config}
-const MODULES=['Dashboard','Empresas','Clientes','Cotizaciones','Ejecución','Actas','Informes','Inventario','Configuración','Usuarios'];
+const MODULES=[
+'Dashboard',
+'Empresas',
+'Clientes',
+'Cotizaciones',
+'Órdenes',
+'Ejecución',
+'Actas',
+'Informes',
+'Inventario',
+'Configuración',
+'Usuarios'
+];
 const ACTIONS=['ver','crear','editar','eliminar','pdf'];
 const ROLES=['ADMIN','GERENTE','OPERADOR','TECNICO','LECTURA'];
 const ROLE_PERMS={
